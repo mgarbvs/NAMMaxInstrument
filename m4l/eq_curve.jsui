@@ -1,0 +1,147 @@
+// eq_curve.jsui — frequency-response visualisation for the NAM tone stack.
+//
+// Receives a 3-element list (bass, mid, treble) from namtone~ outlet 1
+// (each in 0..10, matching live.dial range). Redraws a log-frequency
+// magnitude curve approximating the Fender Bassman passive tone stack
+// (NAM's BasicNamToneStack is a port of that network).
+//
+// The curve here is a stylised approximation, not a sample-accurate readout
+// of the live coefficients — extracting those would require reaching into
+// NAM core internals. This visual is good enough to communicate "what the
+// knobs do" and matches the spirit of Ableton's factory Amp / Convolution
+// Reverb response displays. PLAN §5 + §9 risk note explicitly accepts this
+// trade-off (filtergraph~ can't draw the non-biquad-sum tone stack either).
+//
+// Drawing: log-spaced frequency grid 30 Hz .. 20 kHz, magnitude axis
+// ±15 dB clipped, single curve in the host's accent colour.
+
+inlets = 1;
+outlets = 1;
+
+mgraphics.init();
+mgraphics.relative_coords = 0;
+mgraphics.autofill = 0;
+
+// Current parameter state (0..10 range from live.dial).
+var bass = 5.0;
+var mid = 5.0;
+var treble = 5.0;
+
+// Frequency grid.
+var FMIN = 30.0;
+var FMAX = 20000.0;
+var N_POINTS = 96;
+
+// ── messages ─────────────────────────────────────────────────────────────────
+
+// namtone~ emits a 3-element list (bass, mid, treble) on each parameter
+// change. mgraphics.redraw() schedules a paint on the next event loop tick.
+function list(b, m, t) {
+    if (arguments.length >= 1) bass   = +b;
+    if (arguments.length >= 2) mid    = +m;
+    if (arguments.length >= 3) treble = +t;
+    mgraphics.redraw();
+}
+
+function bang() {
+    mgraphics.redraw();
+}
+
+// ── transfer-function approximation ──────────────────────────────────────────
+//
+// Returns response magnitude in dB for frequency f given current bass/mid/treble.
+// Three overlapping bell/shelf contributions:
+//   - bass:   low-shelf centred ~80 Hz,  gain ±12 dB across 0..10 (5 = flat)
+//   - mid:    bell at ~500 Hz,           gain ±10 dB
+//   - treble: high-shelf centred ~2.5 kHz, gain ±12 dB
+//
+// The Bassman tone stack has a characteristic mid scoop when mid is low and
+// treble + bass are high; the bell/shelf approximation captures that shape.
+
+function tilt(f, centre, octaves, gain_db) {
+    // Soft bell-ish weighting centred at `centre`, ~`octaves` wide.
+    var logf = Math.log(f) / Math.LN2;
+    var logc = Math.log(centre) / Math.LN2;
+    var d = (logf - logc) / octaves;
+    return gain_db * Math.exp(-d * d);
+}
+
+function response_db(f) {
+    // 0..10 → ±1 around centre 5; multiply by max-dB to get contribution.
+    var b = (bass   - 5.0) / 5.0;
+    var m = (mid    - 5.0) / 5.0;
+    var t = (treble - 5.0) / 5.0;
+
+    // Low shelf (bell-like at ~80 Hz, wide)
+    var low = b * 12.0 * sigmoid_low(f, 200.0);
+    // Mid bell at ~500 Hz
+    var midband = tilt(f, 500.0, 1.2, m * 10.0);
+    // High shelf (bell-like at ~2.5 kHz)
+    var high = t * 12.0 * sigmoid_high(f, 1500.0);
+
+    return low + midband + high;
+}
+
+function sigmoid_low(f, cutoff) {
+    // 1 well below cutoff, 0 well above.
+    return 1.0 / (1.0 + Math.pow(f / cutoff, 2.0));
+}
+
+function sigmoid_high(f, cutoff) {
+    // 0 well below cutoff, 1 well above.
+    return 1.0 - 1.0 / (1.0 + Math.pow(f / cutoff, 2.0));
+}
+
+// ── paint ────────────────────────────────────────────────────────────────────
+
+function paint() {
+    var width  = box.rect[2] - box.rect[0];
+    var height = box.rect[3] - box.rect[1];
+
+    with (mgraphics) {
+        // Background — translucent neutral grey, matches chassis panel.
+        set_source_rgba(0.18, 0.18, 0.20, 1.0);
+        rectangle(0, 0, width, height);
+        fill();
+
+        // Zero-dB midline.
+        set_source_rgba(1.0, 1.0, 1.0, 0.20);
+        set_line_width(1.0);
+        move_to(0, height / 2);
+        line_to(width, height / 2);
+        stroke();
+
+        // Magnitude curve.
+        set_source_rgba(1.0, 0.68, 0.0, 1.0);  // amber accent (#ffae00)
+        set_line_width(1.5);
+
+        var log_min = Math.log(FMIN);
+        var log_max = Math.log(FMAX);
+        var db_clip = 15.0;
+
+        var first = true;
+        for (var i = 0; i < N_POINTS; ++i) {
+            var x_frac = i / (N_POINTS - 1);
+            var f = Math.exp(log_min + x_frac * (log_max - log_min));
+            var db = response_db(f);
+            if (db >  db_clip) db =  db_clip;
+            if (db < -db_clip) db = -db_clip;
+
+            var x = x_frac * width;
+            var y = height / 2 - (db / db_clip) * (height / 2 - 4);
+
+            if (first) {
+                move_to(x, y);
+                first = false;
+            } else {
+                line_to(x, y);
+            }
+        }
+        stroke();
+    }
+}
+
+// Initial paint on patcher load.
+function loadbang() {
+    mgraphics.redraw();
+}
