@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NAM Max for Live — User Guide</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+      font-size: 15px;
+      line-height: 1.65;
+      color: #1a1a1a;
+      background: #f5f5f5;
+    }
+
+    .page {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 48px 32px 80px;
+      background: #fff;
+      min-height: 100vh;
+    }
+
+    h1 { font-size: 2rem; font-weight: 700; margin-bottom: 6px; }
+    h2 { font-size: 1.25rem; font-weight: 700; margin: 2.5rem 0 0.75rem; padding-bottom: 6px; border-bottom: 2px solid #e0e0e0; }
+    h3 { font-size: 1rem; font-weight: 700; margin: 1.5rem 0 0.4rem; color: #333; }
+
+    p { margin-bottom: 0.8rem; }
+    ul, ol { padding-left: 1.5rem; margin-bottom: 0.8rem; }
+    li { margin-bottom: 0.3rem; }
+
+    .subtitle {
+      color: #555;
+      font-size: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .signal-chain {
+      background: #1a1a1a;
+      color: #d4f0a0;
+      font-family: "SF Mono", "Fira Mono", "Consolas", monospace;
+      font-size: 0.82rem;
+      padding: 18px 22px;
+      border-radius: 6px;
+      overflow-x: auto;
+      margin: 1rem 0 1.5rem;
+      line-height: 1.8;
+    }
+
+    .section-badge {
+      display: inline-block;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 2px 8px;
+      border-radius: 3px;
+      margin-bottom: 0.6rem;
+    }
+    .badge-nam   { background: #1a1a1a; color: #fff; }
+    .badge-tone  { background: #2d4a8c; color: #fff; }
+    .badge-ir    { background: #5c2d91; color: #fff; }
+
+    .control-row {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 0.6rem;
+      align-items: baseline;
+    }
+    .control-name {
+      font-weight: 700;
+      min-width: 140px;
+      color: #1a1a1a;
+      flex-shrink: 0;
+    }
+    .control-desc { color: #333; }
+
+    .tip {
+      background: #fffbea;
+      border-left: 4px solid #f0b429;
+      padding: 12px 16px;
+      border-radius: 0 4px 4px 0;
+      margin: 1.2rem 0;
+    }
+    .tip strong { color: #8a6200; }
+
+    .note {
+      background: #eef4ff;
+      border-left: 4px solid #4a7fd4;
+      padding: 12px 16px;
+      border-radius: 0 4px 4px 0;
+      margin: 1.2rem 0;
+    }
+
+    code {
+      font-family: "SF Mono", "Fira Mono", "Consolas", monospace;
+      font-size: 0.85em;
+      background: #f0f0f0;
+      padding: 1px 5px;
+      border-radius: 3px;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 1rem 0;
+      font-size: 0.9rem;
+    }
+    th {
+      text-align: left;
+      background: #f0f0f0;
+      padding: 8px 12px;
+      font-weight: 700;
+    }
+    td { padding: 8px 12px; border-top: 1px solid #e0e0e0; }
+    tr:last-child td { border-bottom: 1px solid #e0e0e0; }
+
+    hr { border: none; border-top: 1px solid #e0e0e0; margin: 2rem 0; }
+
+    .toc {
+      background: #f8f8f8;
+      border: 1px solid #e0e0e0;
+      padding: 16px 20px;
+      border-radius: 5px;
+      margin-bottom: 2.5rem;
+    }
+    .toc h2 { font-size: 0.9rem; border: none; margin: 0 0 0.5rem; color: #555; letter-spacing: 0.08em; text-transform: uppercase; }
+    .toc ol { margin: 0; }
+    .toc a { color: #2d4a8c; text-decoration: none; }
+    .toc a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <h1>NAM Max for Live</h1>
+  <p class="subtitle">User Guide — Neural Amp Modeler in Ableton Live</p>
+
+  <div class="toc">
+    <h2>Contents</h2>
+    <ol>
+      <li><a href="#overview">Overview</a></li>
+      <li><a href="#installation">Installation &amp; first use</a></li>
+      <li><a href="#signal-chain">Signal chain</a></li>
+      <li><a href="#nam-section">NAM Amp Head section</a></li>
+      <li><a href="#gate-tone-section">Gate + Tone Stack section</a></li>
+      <li><a href="#ir-section">IR Cabinet section</a></li>
+      <li><a href="#workflow">Workflow tips</a></li>
+    </ol>
+  </div>
+
+  <!-- ── OVERVIEW ────────────────────────────────────────────────────────── -->
+  <h2 id="overview">Overview</h2>
+
+  <p>NAM Max for Live is a Max for Live audio effect that loads <a href="https://github.com/sdatkinson/neural-amp-modeler"><strong>Neural Amp Modeler</strong></a> (<code>.nam</code>) files directly in Ableton Live. It reproduces the full signal chain of a guitar rig in software: preamp tone, noise gate, an FMV tone stack, and optional cabinet IR convolution — all without any VST or AU plugin.</p>
+
+  <p>The device has three collapsible sections. You can show or hide the <strong>Tone Stack</strong> and <strong>IR Cabinet</strong> sections independently to reclaim screen space. The <strong>NAM Amp Head</strong> section is always visible.</p>
+
+  <div class="note">
+    <strong>Platform:</strong> macOS only (Apple Silicon and Intel universal). The <code>.mxo</code> externals (NAM inference, IR convolution, tone stack) are native macOS bundles. Windows is not currently supported.
+  </div>
+
+  <!-- ── INSTALLATION ─────────────────────────────────────────────────────── -->
+  <h2 id="installation">Installation &amp; first use</h2>
+
+  <p>All files inside <code>m4l/</code> must remain together in the same folder — Max for Live searches only the directory containing the <code>.amxd</code> for native externals.</p>
+
+  <ol>
+    <li>Copy every file in <code>m4l/</code> to your Ableton User Library:<br>
+        <code>~/Music/Ableton/User Library/Presets/Audio Effects/Max Audio Effect/</code></li>
+    <li>In Ableton Live, drag <strong>NAM.amxd</strong> onto an audio track.</li>
+    <li>Click <strong>Set NAM Root</strong> and choose the folder containing your <code>.nam</code> files. Subfolders are scanned automatically.</li>
+    <li>Use the category and file menus to select a model. The amp loads immediately.</li>
+    <li>Optionally, click <strong>Set IR Root</strong> and select a <code>.wav</code> IR file to add cabinet simulation.</li>
+  </ol>
+
+  <p>The device saves your root folders and the last selected model and IR across Live sessions — they reload automatically the next time you open the set.</p>
+
+  <div class="tip">
+    <strong>Tip:</strong> You can also drag a <code>.nam</code> file directly onto the waveform/grill area in the NAM Amp Head section, or drag a <code>.wav</code> directly onto the waveform display in the IR Cabinet section, to load without using the menus.
+  </div>
+
+  <!-- ── SIGNAL CHAIN ─────────────────────────────────────────────────────── -->
+  <h2 id="signal-chain">Signal chain</h2>
+
+  <div class="signal-chain">Input gain<br>
+  │<br>
+  ├──▶ Noise gate (sidechain envelope)<br>
+  │<br>
+  └──▶ NAM model inference<br>
+       │<br>
+       └──▶ Noise gate (gain application)<br>
+            │<br>
+            └──▶ NAM dry/wet blend<br>
+                 │<br>
+                 └──▶ FMV tone stack (Bass · Mid · Treble)<br>
+                      │<br>
+                      └──▶ IR convolution (cabinet simulation)<br>
+                           │<br>
+                           └──▶ IR dry/wet blend<br>
+                                │<br>
+                                └──▶ Output</div>
+
+  <p>Each stage can be bypassed independently. The gate, tone stack, and IR each have a hard bypass switch. The whole device also has a master <strong>Bypass</strong> toggle that short-circuits the entire chain with latency compensation.</p>
+
+  <!-- ── NAM SECTION ──────────────────────────────────────────────────────── -->
+  <h2 id="nam-section">NAM Amp Head section</h2>
+
+  <p><span class="section-badge badge-nam">NAM Amp Head</span></p>
+
+  <p>This section is always visible. It covers model loading, input/output levels, and the master bypass and section collapse toggles.</p>
+
+  <h3>Loading models</h3>
+  <p>NAM model files (<code>.nam</code>) are neural network snapshots of real amplifiers. Free models are available on <a href="https://tone3000.org">Tone3000</a>.</p>
+
+  <div class="control-row">
+    <span class="control-name">Set NAM Root</span>
+    <span class="control-desc">Opens a folder picker. Point it at the root of your <code>.nam</code> library. All subfolders become categories in the menu below.</span>
+  </div>
+  <div class="control-row">
+    <span class="control-name">Trim (checkbox)</span>
+    <span class="control-desc">When enabled, strips the common folder-name prefix from category labels so menus are easier to read.</span>
+  </div>
+  <div class="control-row">
+    <span class="control-name">Category menu</span>
+    <span class="control-desc">Lists the subfolders inside your NAM Root. Use the <strong>&lt;</strong> / <strong>&gt;</strong> arrows to step through them.</span>
+  </div>
+  <div class="control-row">
+    <span class="control-name">Model menu</span>
+    <span class="control-desc">Lists <code>.nam</code> files in the selected category. Use the <strong>&lt;</strong> / <strong>&gt;</strong> arrows to audition models one by one.</span>
+  </div>
+  <div class="control-row">
+    <span class="control-name">Drag &amp; drop</span>
+    <span class="control-desc">Drop any <code>.nam</code> file onto the amp grill area to load it directly, bypassing the menu system.</span>
+  </div>
+  <div class="control-row">
+    <span class="control-name">Status bar</span>
+    <span class="control-desc">Shows the name of the currently loaded model, or <em>(no model loaded)</em> on startup. Displays error messages if a model file cannot be read.</span>
+  </div>
+
+  <h3>Levels</h3>
+  <div class="control-row">
+    <span class="control-name">Input (left fader)</span>
+    <span class="control-desc">Gain before the NAM inference stage. ±36 dB. Use this to hit the model at the right drive level — NAM models are trained at a specific input level, so more input = more saturation.</span>
+  </div>
+  <div class="control-row">
+    <span class="control-name">NAM Out (right fader)</span>
+    <span class="control-desc">Output level after NAM inference, before the tone stack and IR stages. ±36 dB. Use this to match levels when comparing models.</span>
+  </div>
+
+  <h3>Bottom row</h3>
+  <div class="control-row">
+    <span class="control-name">Bypass</span>
+    <span class="control-desc">Hard-bypasses the entire device with latency compensation — the dry signal is delay-matched to the IR convolution latency so Ableton's PDC stays accurate.</span>
+  </div>
+  <div class="control-row">
+    <span class="control-name">Tone</span>
+    <span class="control-desc">Collapses or expands the Gate + Tone Stack section. The tone stack itself stays active when collapsed.</span>
+  </div>
+  <div class="control-row">
+    <span class="control-name">IR</span>
+    <span class="control-desc">Collapses or expands the IR Cabinet section. IR convolution stays active when collapsed.</span>
+  </div>
+
+  <!-- ── GATE + TONE SECTION ─────────────────────────────────────────────── -->
+  <h2 id="gate-tone-section">Gate + Tone Stack section</h2>
+
+  <p><span class="section-badge badge-tone">Gate + Tone Stack</span></p>
+
+  <p>This section can be collapsed. It contains the noise gate threshold and the FMV (Fender–Marshall–Vox) tone stack.</p>
+
+  <h3>NAM Dry/Wet</h3>
+  <div class="control-row">
+    <span class="control-name">NAM (dial)</span>
+    <span class="control-desc">Crossfades between the dry input signal and the NAM model output. 0% = fully dry (amp bypassed), 100% = fully processed. Default is 100%.</span>
+  </div>
+
+  <h3>Noise gate</h3>
+  <p>The gate uses a sidechain architecture: an envelope follower on the input signal controls a gain stage after NAM inference. This means the gate tracks picking dynamics but doesn't clip the tail of NAM's own sustain artificially.</p>
+
+  <div class="control-row">
+    <span class="control-name">Gate (dial)</span>
+    <span class="control-desc">Threshold in dB. Signal below this level is muted. Range: −70 to 0 dB. Default is −70 dB (fully open — gate has no effect). Raise the threshold to silence amp hiss and string noise between notes.</span>
+  </div>
+  <div class="control-row">
+    <span class="control-name">Gate off / Gate on</span>
+    <span class="control-desc">Hard-bypasses the gate entirely. When off, the signal passes through NAM unaffected regardless of the threshold setting.</span>
+  </div>
+
+  <div class="tip">
+    <strong>Setting the threshold:</strong> Start with the gate on and the threshold at −70 dB, then raise it slowly while not playing until the amp hiss disappears. Avoid setting it too high or fast picking attacks will be cut.
+  </div>
+
+  <h3>FMV tone stack</h3>
+  <p>The tone stack is a digital implementation of the <strong>Fender Bassman</strong> passive EQ circuit — the same topology used in many classic British and American amps (the "FMV" family: Fender, Marshall, Vox). It is a fully passive, interactive three-band network, meaning the Bass, Mid, and Treble controls interact with each other the way real amp knobs do, not like independent parametric EQ bands.</p>
+
+  <p>All three dials run 0–10, matching the feel of a real amp front panel.</p>
+
+  <div class="control-row">
+    <span class="control-name">Bass</span>
+    <span class="control-desc">Low-frequency body. At 5 the response is close to flat. Raising it adds warmth and weight; cutting it cleans up muddy low-mids.</span>
+  </div>
+  <div class="control-row">
+    <span class="control-name">Mid</span>
+    <span class="control-desc">Midrange presence. The Bassman network produces a broad mid scoop when cut — the classic "scooped" sound. Raising it adds honk and cut through a mix.</span>
+  </div>
+  <div class="control-row">
+    <span class="control-name">Treble</span>
+    <span class="control-desc">High-frequency brightness and pick attack. Interacts strongly with Bass — boosting both simultaneously emphasizes the characteristic FMV midrange dip.</span>
+  </div>
+
+  <p>The EQ curve display in this section shows the combined frequency response of the current Bass/Mid/Treble settings in real time.</p>
+
+  <div class="control-row">
+    <span class="control-name">Tone off / Tone on</span>
+    <span class="control-desc">Hard-bypasses the tone stack. The EQ curve display goes inactive when the tone stack is off.</span>
+  </div>
+
+  <div class="tip">
+    <strong>Classic settings:</strong>
+    <ul style="margin-top: 6px;">
+      <li><strong>Flat:</strong> Bass 5, Mid 5, Treble 5</li>
+      <li><strong>Scooped (metal / modern):</strong> Bass 7, Mid 2, Treble 7</li>
+      <li><strong>Presence boost:</strong> Bass 4, Mid 5, Treble 8</li>
+      <li><strong>Warm jazz/blues:</strong> Bass 6, Mid 6, Treble 3</li>
+    </ul>
+  </div>
+
+  <!-- ── IR SECTION ──────────────────────────────────────────────────────── -->
+  <h2 id="ir-section">IR Cabinet section</h2>
+
+  <p><span class="section-badge badge-ir">IR Cabinet</span></p>
+
+  <p>This section can be collapsed. It loads a cabinet impulse response (<code>.wav</code>) and convolves it with the signal using a partitioned FFT algorithm. The IR simulates the acoustic character of a speaker cabinet and microphone placement.</p>
+
+  <h3>Loading IRs</h3>
+  <div class="control-row">
+    <span class="control-name">Set IR Root</span>
+    <span class="control-desc">Opens a folder picker. Point it at your IR library. Subfolders become categories.</span>
+  </div>
+  <div class="control-row">
+    <span class="control-name">Trim (checkbox)</span>
+    <span class="control-desc">Strips common prefix from category/file names, same as in the NAM section.</span>
+  </div>
+  <div class="control-row">
+    <span class="control-name">Category menu</span>
+    <span class="control-desc">Subfolder categories inside your IR Root. Navigate with <strong>&lt;</strong> / <strong>&gt;</strong>.</span>
+  </div>
+  <div class="control-row">
+    <span class="control-name">File menu</span>
+    <span class="control-desc">Individual IR files in the selected category. Navigate with <strong>&lt;</strong> / <strong>&gt;</strong>.</span>
+  </div>
+  <div class="control-row">
+    <span class="control-name">Duration display</span>
+    <span class="control-desc">Shows the length of the loaded IR file in seconds (e.g., <code>0.18 sec</code>). Longer IRs capture more room detail but require more CPU.</span>
+  </div>
+  <div class="control-row">
+    <span class="control-name">Waveform display</span>
+    <span class="control-desc">Shows the waveform of the loaded IR. Longer IRs with prominent early reflections typically produce more "air" and room character.</span>
+  </div>
+  <div class="control-row">
+    <span class="control-name">Drag &amp; drop</span>
+    <span class="control-desc">Drop any <code>.wav</code> file onto the waveform display to load it directly.</span>
+  </div>
+
+  <h3>IR blend and bypass</h3>
+  <div class="control-row">
+    <span class="control-name">IR (dial)</span>
+    <span class="control-desc">Crossfades between the dry (pre-IR) signal and the convolved output. 0% = cabinet bypassed, 100% = full IR. The dry path is delay-compensated to match IR latency, so blending stays in phase.</span>
+  </div>
+  <div class="control-row">
+    <span class="control-name">IR off / IR on</span>
+    <span class="control-desc">Hard-bypasses IR convolution entirely. Use this to compare the amp tone with and without cabinet coloration.</span>
+  </div>
+
+  <div class="note">
+    <strong>Latency:</strong> IR convolution adds processing latency proportional to the IR length. The device automatically reports this latency to Live's PDC engine, so other tracks stay in sync. The <strong>Bypass</strong> toggle in the NAM section also compensates for this delay when hard-bypassing the whole device.
+  </div>
+
+  <div class="tip">
+    <strong>IR level normalization:</strong> The device applies a −18 dB normalization factor to the IR output to match the level convention used by the Neural Amp Modeler plugin. This is calculated per sample rate. You don't need to adjust for it manually.
+  </div>
+
+  <!-- ── WORKFLOW ─────────────────────────────────────────────────────────── -->
+  <h2 id="workflow">Workflow tips</h2>
+
+  <h3>Typical starting point</h3>
+  <ol>
+    <li>Set NAM Root → pick a model. Listen to the raw amp tone (IR off, Tone off, Gate off).</li>
+    <li>Adjust <strong>Input</strong> gain to get the drive character you want. More input = more saturation.</li>
+    <li>Enable the <strong>Tone Stack</strong> and dial in Bass/Mid/Treble to taste.</li>
+    <li>Enable the <strong>IR</strong> and pick a cabinet that fits the amp style. A Fender model pairs well with a 1×12 or 2×12 IR; a high-gain model typically works well with a 4×12.</li>
+    <li>Raise the gate threshold until hiss between notes disappears, then back off slightly.</li>
+    <li>Use <strong>NAM Out</strong> to match volume against other tracks or presets.</li>
+  </ol>
+
+  <h3>Ableton automation</h3>
+  <p>All dials and toggles are Live-mapped parameters and can be automated or modulated in Live. The Tone Stack dials (Bass, Mid, Treble) respond to MIDI mapping and automation envelopes. Map them to a MIDI controller to do real-time tone shaping during a session.</p>
+
+  <h3>Comparing models quickly</h3>
+  <p>Use the <strong>&lt;</strong> / <strong>&gt;</strong> arrows next to the Model menu to step through <code>.nam</code> files in the current category while playback is running. The new model loads mid-stream with no click.</p>
+
+  <h3>Collapsing sections</h3>
+  <p>Click <strong>Tone</strong> or <strong>IR</strong> in the bottom row of the NAM section to collapse those panels. The device shrinks to save space. The signal processing continues running — collapsing is display-only.</p>
+
+  <hr>
+
+  <p style="color: #888; font-size: 0.82rem;">NAM Max for Live — MIT License — <a href="https://github.com/mgarbvs/NAMMaxInstrument" style="color: #888;">github.com/mgarbvs/NAMMaxInstrument</a></p>
+
+</div>
+</body>
+</html>

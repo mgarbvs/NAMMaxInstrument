@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""build_combined_maxpat.py — emit m4l/COMBINED.maxpat.
+"""build_combined_maxpat.py — emit m4l/NAM.maxpat.
 
 Full NAM + TONE + IR instrument in a single 962 × 166 px device.
 Three sections: NAM Amp Head (320) | Gate + Tone Stack (320) | 2px gap | IR Cabinet (320).
@@ -823,7 +823,7 @@ def build():
 
 if __name__ == "__main__":
     here = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    out = sys.argv[1] if len(sys.argv) > 1 else os.path.join(here, "m4l", "COMBINED.maxpat")
+    out = sys.argv[1] if len(sys.argv) > 1 else os.path.join(here, "m4l", "NAM.maxpat")
     doc = build()
     os.makedirs(os.path.dirname(out), exist_ok=True)
     with open(out, "w") as f:
