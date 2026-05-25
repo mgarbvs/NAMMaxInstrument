@@ -7,7 +7,7 @@ A [Neural Amp Modeler](https://github.com/sdatkinson/NeuralAmpModelerPlugin) ins
 ## Signal chain
 
 ```
-Input gain → Noise gate → NAM model → FMV tone stack → IR convolution → Output gain
+Input gain → Noise gate → NAM model → 3-band EQ → IR convolution → Output gain
 ```
 
 Three collapsible sections: **NAM Amp Head** | **Gate + Tone Stack** | **IR Cabinet**
@@ -58,7 +58,7 @@ The device saves your root folders and last selection across sessions.
 | NAM dial | Dry/wet blend between the raw input and NAM output (default 100% wet) |
 | Gate dial | Noise gate threshold, −70 to 0 dB; raise until hiss disappears between notes |
 | Gate off / on | Hard-bypass the gate |
-| Bass · Mid · Treble | FMV (Fender Bassman) passive tone stack, 0–10 like a real amp; controls interact the way physical knobs do |
+| Bass · Mid · Treble | 3-band biquad EQ (same as NAM plugin): low shelf 150 Hz ±20 dB · peaking 425 Hz ±15 dB · high shelf 1800 Hz ±10 dB; knob 5 = flat |
 | EQ curve display | Live frequency response of the current Bass/Mid/Treble setting |
 | Tone off / on | Hard-bypass the tone stack |
 

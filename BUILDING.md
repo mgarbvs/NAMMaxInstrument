@@ -10,6 +10,10 @@ git clone https://github.com/Cycling74/max-sdk.git ../max-sdk
 git clone https://github.com/sdatkinson/NeuralAmpModelerCore.git NeuralAmpModelerCore
 git clone https://github.com/AlexHarker/HISSTools_Library.git HISSTools_Library
 
+# NeuralAmpModelerPlugin (tone stack source — ToneStack.cpp + AudioDSPTools)
+git clone https://github.com/sdatkinson/NeuralAmpModelerPlugin.git NeuralAmpModelerPlugin
+cd NeuralAmpModelerPlugin && git submodule update --init --recursive && cd ..
+
 # Eigen (header-only)
 git clone https://gitlab.com/libeigen/eigen.git eigen
 
@@ -19,7 +23,7 @@ curl -L -o nlohmann_json/json.hpp \
     https://github.com/nlohmann/json/releases/latest/download/json.hpp
 ```
 
-Pin `NeuralAmpModelerCore` and `HISSTools_Library` to stable commits — see `external_src/thirdparty/README.md`.
+Pin `NeuralAmpModelerCore`, `HISSTools_Library`, and `NeuralAmpModelerPlugin` to stable commits — see `external_src/thirdparty/README.md`. Without `NeuralAmpModelerPlugin`, `namtone~` compiles as a silent passthrough (no tone shaping).
 
 ## 2. Build the native externals
 
@@ -66,7 +70,7 @@ NAMMaxInstrument/
 ├── external_src/
 │   ├── CMakeLists.txt
 │   ├── nam~.cpp                   NAM model inference
-│   ├── namtone~.cpp               FMV (Bassman) tone stack
+│   ├── namtone~.cpp               BasicNamToneStack (3-band biquad EQ)
 │   ├── namgate_trigger~.cpp       noise gate sidechain
 │   ├── namgate_gain~.cpp          noise gate gain
 │   ├── irconv~.cpp                partitioned IR convolution (HISSTools)

@@ -293,25 +293,30 @@
     <strong>Setting the threshold:</strong> Start with the gate on and the threshold at −70 dB, then raise it slowly while not playing until the amp hiss disappears. Avoid setting it too high or fast picking attacks will be cut.
   </div>
 
-  <h3>FMV tone stack</h3>
-  <p>The tone stack is a digital implementation of the <strong>Fender Bassman</strong> passive EQ circuit — the same topology used in many classic British and American amps (the "FMV" family: Fender, Marshall, Vox). It is a fully passive, interactive three-band network, meaning the Bass, Mid, and Treble controls interact with each other the way real amp knobs do, not like independent parametric EQ bands.</p>
+  <h3>Tone stack</h3>
+  <p>The tone stack is the same three-band EQ used in the Neural Amp Modeler plugin (<strong>BasicNamToneStack</strong>): three independent biquad filters in series, computed with standard Audio EQ Cookbook formulas. All knobs run 0–10; position 5 = flat (0 dB).</p>
 
-  <p>All three dials run 0–10, matching the feel of a real amp front panel.</p>
+  <table>
+    <tr><th>Knob</th><th>Filter type</th><th>Center freq</th><th>Range</th></tr>
+    <tr><td>Bass</td><td>Low shelf</td><td>150 Hz</td><td>±20 dB (4 dB per step)</td></tr>
+    <tr><td>Mid</td><td>Peaking</td><td>425 Hz</td><td>±15 dB (3 dB per step)</td></tr>
+    <tr><td>Treble</td><td>High shelf</td><td>1800 Hz</td><td>±10 dB (2 dB per step)</td></tr>
+  </table>
 
   <div class="control-row">
     <span class="control-name">Bass</span>
-    <span class="control-desc">Low-frequency body. At 5 the response is close to flat. Raising it adds warmth and weight; cutting it cleans up muddy low-mids.</span>
+    <span class="control-desc">Low shelf at 150 Hz. Raises or lowers body and warmth. ±20 dB range — the widest of the three bands.</span>
   </div>
   <div class="control-row">
     <span class="control-name">Mid</span>
-    <span class="control-desc">Midrange presence. The Bassman network produces a broad mid scoop when cut — the classic "scooped" sound. Raising it adds honk and cut through a mix.</span>
+    <span class="control-desc">Peaking filter at 425 Hz. The Q is narrower when boosting (0.7) and wider when cutting (1.5), so boosts feel focused and cuts feel smooth. ±15 dB.</span>
   </div>
   <div class="control-row">
     <span class="control-name">Treble</span>
-    <span class="control-desc">High-frequency brightness and pick attack. Interacts strongly with Bass — boosting both simultaneously emphasizes the characteristic FMV midrange dip.</span>
+    <span class="control-desc">High shelf at 1800 Hz. Controls brightness and pick attack. ±10 dB.</span>
   </div>
 
-  <p>The EQ curve display in this section shows the combined frequency response of the current Bass/Mid/Treble settings in real time.</p>
+  <p>The EQ curve display shows the exact combined frequency response of the current settings in real time — it uses the same biquad math as the DSP, not a stylized approximation.</p>
 
   <div class="control-row">
     <span class="control-name">Tone off / Tone on</span>

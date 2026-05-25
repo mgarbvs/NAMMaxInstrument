@@ -23,6 +23,21 @@ git rev-parse HEAD > PINNED_COMMIT.txt
 
 Pin to a tagged release commit, not `main` — the NAM core ABI is not stable (PLAN.md §9). Record the chosen hash in `external_src/thirdparty/NeuralAmpModelerCore/PINNED_COMMIT.txt`.
 
+### NeuralAmpModelerPlugin (tone stack)
+
+The `namtone~` external links against `ToneStack.cpp` and `AudioDSPTools` from the plugin repo — these are not in `NeuralAmpModelerCore`. CMake checks for the headers at configure time and sets `NAM_TONESTACK_AVAILABLE=1` when found; without this, `namtone~` compiles as a silent passthrough (no tone shaping).
+
+```bash
+git clone https://github.com/sdatkinson/NeuralAmpModelerPlugin.git NeuralAmpModelerPlugin
+cd NeuralAmpModelerPlugin
+git checkout <pinned-commit>
+git submodule update --init --recursive   # fetches AudioDSPTools
+git rev-parse HEAD > PINNED_COMMIT.txt
+cd ..
+```
+
+Pin to a stable commit. The `AudioDSPTools` submodule inside the plugin must be initialised — CMake also checks for `AudioDSPTools/dsp/dsp.h` and will skip the tone stack if it's absent.
+
 ### Eigen
 
 Header-only. Either:

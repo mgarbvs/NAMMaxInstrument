@@ -4,6 +4,7 @@ __pycache__/
 external_src/build/
 external_src/max-sdk/
 external_src/thirdparty/NeuralAmpModelerCore/
+external_src/thirdparty/NeuralAmpModelerPlugin/
 external_src/thirdparty/HISSTools_Library/
 external_src/thirdparty/eigen/
 external_src/thirdparty/nlohmann_json/

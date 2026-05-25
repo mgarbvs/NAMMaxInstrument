@@ -1,19 +1,16 @@
-// eq_curve.jsui — frequency-response visualisation for the NAM tone stack.
+// eq_curve.jsui — frequency-response visualisation for namtone~ (BasicNamToneStack).
 //
 // Receives a 3-element list (bass, mid, treble) from namtone~ outlet 1
-// (each in 0..10, matching live.dial range). Redraws a log-frequency
-// magnitude curve approximating the Fender Bassman passive tone stack
-// (NAM's BasicNamToneStack is a port of that network).
+// (each in 0..10, matching live.dial range). Draws the exact biquad magnitude
+// response using the same Audio EQ Cookbook formulas as ToneStack.cpp:
 //
-// The curve here is a stylised approximation, not a sample-accurate readout
-// of the live coefficients — extracting those would require reaching into
-// NAM core internals. This visual is good enough to communicate "what the
-// knobs do" and matches the spirit of Ableton's factory Amp / Convolution
-// Reverb response displays. PLAN §5 + §9 risk note explicitly accepts this
-// trade-off (filtergraph~ can't draw the non-biquad-sum tone stack either).
+//   Bass:   Low shelf,  f0 = 150 Hz,  Q = 0.707, ±20 dB  (4 dB per knob step)
+//   Mid:    Peaking,    f0 = 425 Hz,  Q = 0.7/1.5 (boost/cut), ±15 dB
+//   Treble: High shelf, f0 = 1800 Hz, Q = 0.707, ±10 dB  (2 dB per knob step)
 //
-// Drawing: log-spaced frequency grid 30 Hz .. 20 kHz, magnitude axis
-// ±15 dB clipped, single curve in the host's accent colour.
+// All three at knob position 5 = 0 dB (flat).
+// Coefficients are computed once per redraw. Sample rate hardcoded to 48000 Hz
+// (shelf shape is stable across 44.1/48 kHz for these frequencies).
 
 inlets = 1;
 outlets = 1;
@@ -22,20 +19,18 @@ mgraphics.init();
 mgraphics.relative_coords = 0;
 mgraphics.autofill = 0;
 
-// Current parameter state (0..10 range from live.dial).
-var bass = 5.0;
-var mid = 5.0;
+var bass   = 5.0;
+var mid    = 5.0;
 var treble = 5.0;
 
-// Frequency grid.
-var FMIN = 30.0;
-var FMAX = 20000.0;
-var N_POINTS = 96;
+var FMIN        = 20.0;
+var FMAX        = 20000.0;
+var N_POINTS    = 128;
+var SAMPLE_RATE = 48000.0;
+var DB_CLIP     = 24.0;  // ±24 dB display range (bass goes ±20 dB)
 
 // ── messages ─────────────────────────────────────────────────────────────────
 
-// namtone~ emits a 3-element list (bass, mid, treble) on each parameter
-// change. mgraphics.redraw() schedules a paint on the next event loop tick.
 function list(b, m, t) {
     if (arguments.length >= 1) bass   = +b;
     if (arguments.length >= 2) mid    = +m;
@@ -43,63 +38,94 @@ function list(b, m, t) {
     mgraphics.redraw();
 }
 
-function bang() {
-    mgraphics.redraw();
+function bang() { mgraphics.redraw(); }
+
+// ── biquad coefficient helpers (mirror ToneStack.cpp) ────────────────────────
+
+function lowShelfCoeffs(gainDB) {
+    var f0 = 150.0, Q = 0.707;
+    var a  = Math.pow(10.0, gainDB / 40.0);
+    var w0 = 2.0 * Math.PI * f0 / SAMPLE_RATE;
+    var al = Math.sin(w0) / (2.0 * Q);
+    var cw = Math.cos(w0);
+    var ap = a + 1.0, am = a - 1.0;
+    var r  = 2.0 * Math.sqrt(a) * al;
+    return [
+        a * (ap - am * cw + r),    // b0
+        2.0 * a * (am - ap * cw),  // b1
+        a * (ap - am * cw - r),    // b2
+        ap + am * cw + r,           // a0
+        -2.0 * (am + ap * cw),     // a1
+        ap + am * cw - r            // a2
+    ];
 }
 
-// ── transfer-function approximation ──────────────────────────────────────────
-//
-// Returns response magnitude in dB for frequency f given current bass/mid/treble.
-// Three overlapping bell/shelf contributions:
-//   - bass:   low-shelf centred ~80 Hz,  gain ±12 dB across 0..10 (5 = flat)
-//   - mid:    bell at ~500 Hz,           gain ±10 dB
-//   - treble: high-shelf centred ~2.5 kHz, gain ±12 dB
-//
-// The Bassman tone stack has a characteristic mid scoop when mid is low and
-// treble + bass are high; the bell/shelf approximation captures that shape.
-
-function tilt(f, centre, octaves, gain_db) {
-    // Soft bell-ish weighting centred at `centre`, ~`octaves` wide.
-    var logf = Math.log(f) / Math.LN2;
-    var logc = Math.log(centre) / Math.LN2;
-    var d = (logf - logc) / octaves;
-    return gain_db * Math.exp(-d * d);
+function peakingCoeffs(gainDB) {
+    var f0 = 425.0, Q = (gainDB < 0.0) ? 1.5 : 0.7;
+    var a  = Math.pow(10.0, gainDB / 40.0);
+    var w0 = 2.0 * Math.PI * f0 / SAMPLE_RATE;
+    var al = Math.sin(w0) / (2.0 * Q);
+    var cw = Math.cos(w0);
+    return [
+        1.0 + al * a,   // b0
+        -2.0 * cw,      // b1
+        1.0 - al * a,   // b2
+        1.0 + al / a,   // a0
+        -2.0 * cw,      // a1
+        1.0 - al / a    // a2
+    ];
 }
 
-function response_db(f) {
-    // 0..10 → ±1 around centre 5; multiply by max-dB to get contribution.
-    var b = (bass   - 5.0) / 5.0;
-    var m = (mid    - 5.0) / 5.0;
-    var t = (treble - 5.0) / 5.0;
-
-    // Low shelf (bell-like at ~80 Hz, wide)
-    var low = b * 12.0 * sigmoid_low(f, 200.0);
-    // Mid bell at ~500 Hz
-    var midband = tilt(f, 500.0, 1.2, m * 10.0);
-    // High shelf (bell-like at ~2.5 kHz)
-    var high = t * 12.0 * sigmoid_high(f, 1500.0);
-
-    return low + midband + high;
+function highShelfCoeffs(gainDB) {
+    var f0 = 1800.0, Q = 0.707;
+    var a  = Math.pow(10.0, gainDB / 40.0);
+    var w0 = 2.0 * Math.PI * f0 / SAMPLE_RATE;
+    var al = Math.sin(w0) / (2.0 * Q);
+    var cw = Math.cos(w0);
+    var ap = a + 1.0, am = a - 1.0;
+    var r  = 2.0 * Math.sqrt(a) * al;
+    return [
+        a * (ap + am * cw + r),    // b0
+        -2.0 * a * (am + ap * cw), // b1
+        a * (ap + am * cw - r),    // b2
+        ap - am * cw + r,           // a0
+        2.0 * (am - ap * cw),      // a1
+        ap - am * cw - r            // a2
+    ];
 }
 
-function sigmoid_low(f, cutoff) {
-    // 1 well below cutoff, 0 well above.
-    return 1.0 / (1.0 + Math.pow(f / cutoff, 2.0));
+// |H(e^jω)|² in dB for one biquad, given precomputed coefficients array
+// c = [b0, b1, b2, a0, a1, a2].
+function biquadMagDB(omega, c) {
+    var cw  = Math.cos(omega),  sw  = Math.sin(omega);
+    var c2w = Math.cos(2.0 * omega), s2w = Math.sin(2.0 * omega);
+
+    var nr = c[0] + c[1] * cw  + c[2] * c2w;
+    var ni = -(c[1] * sw + c[2] * s2w);
+    var dr = c[3] + c[4] * cw  + c[5] * c2w;
+    var di = -(c[4] * sw + c[5] * s2w);
+
+    var num2 = nr * nr + ni * ni;
+    var den2 = dr * dr + di * di;
+    if (den2 < 1e-30) return 0.0;
+    return 10.0 * Math.log(num2 / den2) / Math.LN10;
 }
 
-function sigmoid_high(f, cutoff) {
-    // 0 well below cutoff, 1 well above.
-    return 1.0 - 1.0 / (1.0 + Math.pow(f / cutoff, 2.0));
-}
-
-// ── paint ────────────────────────────────────────────────────────────────────
+// ── paint ─────────────────────────────────────────────────────────────────────
 
 function paint() {
     var width  = box.rect[2] - box.rect[0];
     var height = box.rect[3] - box.rect[1];
 
+    // Precompute coefficients once per frame.
+    var bassC   = lowShelfCoeffs(4.0 * (bass   - 5.0));
+    var midC    = peakingCoeffs( 3.0 * (mid    - 5.0));
+    var trebleC = highShelfCoeffs(2.0 * (treble - 5.0));
+
+    var log_min = Math.log(FMIN);
+    var log_max = Math.log(FMAX);
+
     with (mgraphics) {
-        // Background — translucent neutral grey, matches chassis panel.
         set_source_rgba(0.18, 0.18, 0.20, 1.0);
         rectangle(0, 0, width, height);
         fill();
@@ -112,36 +138,29 @@ function paint() {
         stroke();
 
         // Magnitude curve.
-        set_source_rgba(1.0, 0.68, 0.0, 1.0);  // amber accent (#ffae00)
+        set_source_rgba(1.0, 0.68, 0.0, 1.0);
         set_line_width(1.5);
-
-        var log_min = Math.log(FMIN);
-        var log_max = Math.log(FMAX);
-        var db_clip = 15.0;
 
         var first = true;
         for (var i = 0; i < N_POINTS; ++i) {
             var x_frac = i / (N_POINTS - 1);
-            var f = Math.exp(log_min + x_frac * (log_max - log_min));
-            var db = response_db(f);
-            if (db >  db_clip) db =  db_clip;
-            if (db < -db_clip) db = -db_clip;
+            var f      = Math.exp(log_min + x_frac * (log_max - log_min));
+            var omega  = 2.0 * Math.PI * f / SAMPLE_RATE;
+            var db     = biquadMagDB(omega, bassC)
+                       + biquadMagDB(omega, midC)
+                       + biquadMagDB(omega, trebleC);
+
+            if (db >  DB_CLIP) db =  DB_CLIP;
+            if (db < -DB_CLIP) db = -DB_CLIP;
 
             var x = x_frac * width;
-            var y = height / 2 - (db / db_clip) * (height / 2 - 4);
+            var y = height / 2 - (db / DB_CLIP) * (height / 2 - 4);
 
-            if (first) {
-                move_to(x, y);
-                first = false;
-            } else {
-                line_to(x, y);
-            }
+            if (first) { move_to(x, y); first = false; }
+            else        { line_to(x, y); }
         }
         stroke();
     }
 }
 
-// Initial paint on patcher load.
-function loadbang() {
-    mgraphics.redraw();
-}
+function loadbang() { mgraphics.redraw(); }
