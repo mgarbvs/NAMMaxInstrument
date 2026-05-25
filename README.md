@@ -39,7 +39,40 @@ Then drag **NAM.amxd** onto an audio track in Live.
 
 The device saves your root folders and last selection across sessions.
 
-See **[docs/guide.html](docs/guide.html)** for a full walkthrough of every control.
+## Controls at a glance
+
+**NAM Amp Head** (always visible)
+| Control | What it does |
+|---|---|
+| Set NAM Root | Choose your `.nam` library folder; subfolders become categories |
+| Category / File menus | Browse and load models; `<` `>` arrows step through them |
+| Drag & drop | Drop a `.nam` file onto the grill to load it directly |
+| Input (fader) | Gain before NAM — more = more saturation |
+| NAM Out (fader) | Output level after NAM, before tone and IR |
+| Bypass | Hard-bypasses the whole device with PDC-matched latency compensation |
+| Tone / IR toggles | Collapse or expand the Tone Stack and IR Cabinet panels |
+
+**Gate + Tone Stack** (collapsible)
+| Control | What it does |
+|---|---|
+| NAM dial | Dry/wet blend between the raw input and NAM output (default 100% wet) |
+| Gate dial | Noise gate threshold, −70 to 0 dB; raise until hiss disappears between notes |
+| Gate off / on | Hard-bypass the gate |
+| Bass · Mid · Treble | FMV (Fender Bassman) passive tone stack, 0–10 like a real amp; controls interact the way physical knobs do |
+| EQ curve display | Live frequency response of the current Bass/Mid/Treble setting |
+| Tone off / on | Hard-bypass the tone stack |
+
+**IR Cabinet** (collapsible)
+| Control | What it does |
+|---|---|
+| Set IR Root | Choose your `.wav` IR library folder |
+| Category / File menus | Browse and load IRs; `<` `>` arrows step through them |
+| Drag & drop | Drop a `.wav` onto the waveform display to load it directly |
+| Duration display | Shows IR length in seconds |
+| IR dial | Dry/wet blend between pre-IR signal and convolved output |
+| IR off / on | Hard-bypass IR convolution |
+
+See **[docs/guide.html](docs/guide.html)** for the full guide, including tone stack tips and workflow advice.
 
 ## Building from source
 
