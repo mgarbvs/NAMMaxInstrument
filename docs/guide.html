@@ -154,7 +154,7 @@
   <!-- ── OVERVIEW ────────────────────────────────────────────────────────── -->
   <h2 id="overview">Overview</h2>
 
-  <p>NAM Max for Live is a Max for Live audio effect that loads <a href="https://github.com/sdatkinson/neural-amp-modeler"><strong>Neural Amp Modeler</strong></a> (<code>.nam</code>) files directly in Ableton Live. It reproduces the full signal chain of a guitar rig in software: preamp tone, noise gate, an FMV tone stack, and optional cabinet IR convolution — all without any VST or AU plugin.</p>
+  <p>NAM Max for Live is a Max for Live audio effect that loads <a href="https://github.com/sdatkinson/neural-amp-modeler"><strong>Neural Amp Modeler</strong></a> (<code>.nam</code>) files directly in Ableton Live. It reproduces the full signal chain of a guitar rig in software: preamp tone, noise gate, a 3-band biquad EQ, and optional cabinet IR convolution — all without any VST or AU plugin.</p>
 
   <p>The device has three collapsible sections. You can show or hide the <strong>Tone Stack</strong> and <strong>IR Cabinet</strong> sections independently to reclaim screen space. The <strong>NAM Amp Head</strong> section is always visible.</p>
 
@@ -195,7 +195,7 @@
             │<br>
             └──▶ NAM dry/wet blend<br>
                  │<br>
-                 └──▶ FMV tone stack (Bass · Mid · Treble)<br>
+                 └──▶ 3-band EQ (Bass · Mid · Treble)<br>
                       │<br>
                       └──▶ IR convolution (cabinet simulation)<br>
                            │<br>
@@ -269,7 +269,7 @@
 
   <p><span class="section-badge badge-tone">Gate + Tone Stack</span></p>
 
-  <p>This section can be collapsed. It contains the noise gate threshold and the FMV (Fender–Marshall–Vox) tone stack.</p>
+  <p>This section can be collapsed. It contains the noise gate threshold and the 3-band biquad EQ.</p>
 
   <h3>NAM Dry/Wet</h3>
   <div class="control-row">
