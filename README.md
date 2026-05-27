@@ -2,6 +2,9 @@
 
 A [Neural Amp Modeler](https://github.com/sdatkinson/NeuralAmpModelerPlugin) instrument for Ableton Live, built as a Max for Live device. Loads `.nam` amp models and cabinet IR files directly in Live — no VST or AU required.
 
+<img width="974" height="187" alt="image" src="https://github.com/user-attachments/assets/ca278628-fd3f-4ce7-a1bb-3809ddfa821c" />
+
+
 **Platform:** macOS (Apple Silicon + Intel universal). Windows builds are not yet available.
 
 ## Signal chain
@@ -11,6 +14,24 @@ Input gain → Noise gate → NAM model → 3-band EQ → IR convolution → Out
 ```
 
 Three collapsible sections: **NAM Amp Head** | **Gate + Tone Stack** | **IR Cabinet**
+
+NAM Amp Head:
+
+<img width="331" height="189" alt="image" src="https://github.com/user-attachments/assets/7822611c-e28c-46b6-88d9-88f888ac1d36" />
+
+Gate / Tone Stack:
+
+<img width="648" height="186" alt="image" src="https://github.com/user-attachments/assets/34ffb82d-ce83-4273-a7a8-866149194488" />
+
+IR:
+
+<img width="648" height="184" alt="image" src="https://github.com/user-attachments/assets/586db3c6-d867-48de-823d-b8d38c4004e7" />
+
+
+All together:
+
+<img width="976" height="189" alt="image" src="https://github.com/user-attachments/assets/6c328f80-52a8-4d5b-9dd4-cc336c7ceaa9" />
+
 
 ## Requirements
 
