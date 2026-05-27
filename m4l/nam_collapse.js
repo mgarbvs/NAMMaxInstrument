@@ -32,7 +32,7 @@ var TONE_VARS = [
     "gate_on_toggle", "tone_on_toggle"
 ];
 
-// Keep in sync with build_combined_maxpat.py presentation_rect values.
+// Keep in sync with build_nam_maxpat.py presentation_rect values.
 var IR_LAYOUT = {
     "ir_live_drop":       [642,   0, 320, 100],
     "ir_waveform":        [642,   0, 320, 100],

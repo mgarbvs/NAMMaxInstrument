@@ -1708,8 +1708,9 @@
 							"parameter_initial": [
 								5.0
 							],
-							"parameter_unitstyle": 0,
-							"parameter_modmode": 2
+							"parameter_unitstyle": 1,
+							"parameter_modmode": 2,
+							"parameter_steps": 1001
 						}
 					},
 					"varname": "bass_dial"
@@ -1750,8 +1751,9 @@
 							"parameter_initial": [
 								5.0
 							],
-							"parameter_unitstyle": 0,
-							"parameter_modmode": 2
+							"parameter_unitstyle": 1,
+							"parameter_modmode": 2,
+							"parameter_steps": 1001
 						}
 					},
 					"varname": "mid_dial"
@@ -1792,8 +1794,9 @@
 							"parameter_initial": [
 								5.0
 							],
-							"parameter_unitstyle": 0,
-							"parameter_modmode": 2
+							"parameter_unitstyle": 1,
+							"parameter_modmode": 2,
+							"parameter_steps": 1001
 						}
 					},
 					"varname": "treble_dial"

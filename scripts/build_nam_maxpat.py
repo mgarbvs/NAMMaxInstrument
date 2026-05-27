@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""build_combined_maxpat.py — emit m4l/NAM.maxpat.
+"""build_nam_maxpat.py — emit m4l/NAM.maxpat.
 
 Full NAM + TONE + IR instrument in a single 962 × 166 px device.
 Three sections: NAM Amp Head (320) | Gate + Tone Stack (320) | 2px gap | IR Cabinet (320).
@@ -112,24 +112,27 @@ def live_gain(bid, longname, shortname, px, py, pw=55, ph=90):
 
 
 def live_dial(bid, longname, shortname, px, py, pw, ph,
-              lo, hi, default, unitstyle=0, modmode=2):
+              lo, hi, default, unitstyle=0, modmode=2, steps=0):
+    valueof = {
+        "parameter_longname": longname,
+        "parameter_shortname": shortname,
+        "parameter_type": 0,
+        "parameter_mmin": float(lo),
+        "parameter_mmax": float(hi),
+        "parameter_initial_enable": 1,
+        "parameter_initial": [float(default)],
+        "parameter_unitstyle": unitstyle,
+        "parameter_modmode": modmode,
+    }
+    if steps:
+        valueof["parameter_steps"] = steps
     return box(
         id=bid, maxclass="live.dial",
         numinlets=1, numoutlets=2, outlettype=["", "float"],
         patching_rect=[px + _PX_OFF, py + _PY_OFF, pw, ph],
         presentation=1, presentation_rect=[px, py, pw, ph],
         parameter_enable=1,
-        saved_attribute_attributes={"valueof": {
-            "parameter_longname": longname,
-            "parameter_shortname": shortname,
-            "parameter_type": 0,
-            "parameter_mmin": float(lo),
-            "parameter_mmax": float(hi),
-            "parameter_initial_enable": 1,
-            "parameter_initial": [float(default)],
-            "parameter_unitstyle": unitstyle,
-            "parameter_modmode": modmode,
-        }},
+        saved_attribute_attributes={"valueof": valueof},
         varname=bid,
     )
 
@@ -531,13 +534,13 @@ def build():
     # Absolute x: 320, 374, 428, 482, 536, 590
     boxes.append(live_dial("bass_dial", "Bass", "Bass",
                            px=428, py=92, pw=50, ph=52,
-                           lo=0.0, hi=10.0, default=5.0, unitstyle=0, modmode=2))
+                           lo=0.0, hi=10.0, default=5.0, unitstyle=1, modmode=2, steps=1001))
     boxes.append(live_dial("mid_dial", "Mid", "Mid",
                            px=482, py=92, pw=50, ph=52,
-                           lo=0.0, hi=10.0, default=5.0, unitstyle=0, modmode=2))
+                           lo=0.0, hi=10.0, default=5.0, unitstyle=1, modmode=2, steps=1001))
     boxes.append(live_dial("treble_dial", "Treble", "Trbl",
                            px=536, py=92, pw=50, ph=52,
-                           lo=0.0, hi=10.0, default=5.0, unitstyle=0, modmode=2))
+                           lo=0.0, hi=10.0, default=5.0, unitstyle=1, modmode=2, steps=1001))
 
     for dial_id, msg in [("bass_dial", "bass"), ("mid_dial", "mid"), ("treble_dial", "treble")]:
         boxes.append(newobj(f"pre_{msg}", f"prepend {msg}",
