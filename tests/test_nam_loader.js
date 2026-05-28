@@ -125,22 +125,19 @@ function reset() {
     assertEq(r2, "/Volumes/Macintosh HD/Users/me/x", "maxPathToPosix strips trailing slash");
 })();
 
-// 2. set_nam_root outlet sequence: clear -> N appends -> set 0
+// 2. set_nam_root outlet sequence: clear -> N appends -> set 0 (umenu protocol)
 (function() {
     reset();
     FILES["/Volumes/V/Models"] = { dirs: ["Clean", "HighGain"], files: [] };
     FILES["/Volumes/V/Models/Clean"] = { dirs: [], files: ["fender.nam", "vox.nam"] };
     loader.set_nam_root("V:/Models");
 
-    // Outlet 0 (NAM cat): clear, append Clean, append HighGain, set 0
     var catCalls = outletCalls.filter(function(c) { return c[0] === 0; });
     assertEq(catCalls[0], [0, "clear"], "cat clear");
     assertEq(catCalls[1], [0, "append", "Clean"], "cat append Clean");
     assertEq(catCalls[2], [0, "append", "HighGain"], "cat append HighGain");
     assertEq(catCalls[3], [0, "set", 0], "cat set 0");
 
-    // Cascade: select_nam_category(0) was triggered → model umenu populated
-    // Display names have extension stripped (no common prefix here).
     var modelCalls = outletCalls.filter(function(c) { return c[0] === 1; });
     assertEq(modelCalls[0], [1, "clear"], "model clear");
     assertEq(modelCalls[1], [1, "append", "fender"], "model append fender.nam");

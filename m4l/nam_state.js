@@ -55,8 +55,11 @@ function save() {
 
 // Emit JSON only — the patch's `prepend rehydrate` adds the selector.
 // Sending ("rehydrate", json) here would double-prepend and break parsing.
+// Node-for-Max's maxApi.outlet takes message atoms only (no outlet index);
+// passing 0 as the first arg leaks it as a literal `0` atom prefixed to the
+// JSON, which then fails JSON.parse in the loader's rehydrate handler.
 function emitRehydrate() {
-    maxApi.outlet(0, JSON.stringify(state));
+    maxApi.outlet(JSON.stringify(state));
 }
 
 maxApi.addHandler("set_nam_root", (...args) => {

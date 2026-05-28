@@ -181,6 +181,14 @@ function _makeDisplayFiles(rawFiles, stripExtRe, trimFlag) {
 }
 
 // ─── Umenu population ─────────────────────────────────────────────────
+// The category/model/IR menus are umenu (not live.menu) for the computer UI.
+// Push 3 uses hidden live.menu shadows (enum, "1"…"100" baked in at build
+// time). The enum cannot be updated at runtime — all approaches tested:
+// _parameter_range (same-count and count-change), LOM set("items"),
+// setattr, parameter_visibility modes — all fail to update Push 3's display.
+// Clamping in select_*_by_push gives Push the correct upper bound via value
+// feedback; count-changing _parameter_range breaks this by making the
+// live.menu silently discard out-of-range values before they reach JS.
 
 function fillMenu(outIdx, items, selectIdx) {
     outlet(outIdx, "clear");
@@ -192,6 +200,12 @@ function fillMenu(outIdx, items, selectIdx) {
         outlet(outIdx, "set", idx);
     }
 }
+
+// Mirror a umenu selection to the matching live.menu shadow via receive/set.
+function syncPushIndex(receiveName, idx) {
+    messnamed(receiveName, idx);
+}
+
 
 function setStatus(msg) {
     outlet(OUT_STATUS, "set", msg);
@@ -208,6 +222,7 @@ function _populate_nam_models(idx) {
     idx = parseInt(idx, 10);
     if (isNaN(idx) || idx < 0 || idx >= nam_categories.length) return;
     selected_nam_cat = idx;
+    syncPushIndex("nam_numbox_set_cat", idx);
     var cat = nam_categories[idx];
     var raw = listFilesByExt(cat.abspath, ".nam");
     nam_models = _makeDisplayFiles(raw, /\.nam$/i, trim_prefix_nam);
@@ -243,6 +258,7 @@ function set_nam_root() {
 function select_nam_category(idx) {
     idx = parseInt(idx, 10);
     if (isNaN(idx) || idx < 0 || idx >= nam_categories.length) return;
+    syncPushIndex("nam_numbox_set_cat", idx);
     _populate_nam_models(idx);
     if (nam_models.length > 0) select_nam_model(0);
 }
@@ -251,11 +267,35 @@ function select_nam_model(idx) {
     idx = parseInt(idx, 10);
     if (isNaN(idx) || idx < 0 || idx >= nam_models.length) return;
     selected_nam_model = idx;
+    syncPushIndex("nam_numbox_set_model", idx);
     var m = nam_models[idx];
     outlet(OUT_NAM_LOAD, "load", m.abspath);
     setStatus("Loading model: " + m.name);
     messnamed("nam_state_set_nam_relpath", m.relpath);
     _coverNamDrop();
+}
+
+// Push-facing selection: Push encoder dials live.numbox which routes here.
+// Clamp the int to the actual range (live.numbox mmax is 99 but folders may
+// have fewer items), drive the umenu via `set <idx>`, then call the standard
+// selection path. syncPushIndex pushes the clamped value back so Push display
+// reflects the clamp (otherwise it stays at the over-range value).
+function select_nam_cat_by_push(idx) {
+    idx = parseInt(idx, 10);
+    if (isNaN(idx) || nam_categories.length === 0) return;
+    if (idx >= nam_categories.length) idx = nam_categories.length - 1;
+    if (idx < 0) idx = 0;
+    outlet(OUT_NAM_CAT, "set", idx);
+    select_nam_category(idx);
+}
+
+function select_nam_model_by_push(idx) {
+    idx = parseInt(idx, 10);
+    if (isNaN(idx) || nam_models.length === 0) return;
+    if (idx >= nam_models.length) idx = nam_models.length - 1;
+    if (idx < 0) idx = 0;
+    outlet(OUT_NAM_MODEL, "set", idx);
+    select_nam_model(idx);
 }
 
 // ─── Handlers: IR root + selection ────────────────────────────────────
@@ -264,6 +304,7 @@ function _populate_ir_files(idx) {
     idx = parseInt(idx, 10);
     if (isNaN(idx) || idx < 0 || idx >= ir_categories.length) return;
     selected_ir_cat = idx;
+    syncPushIndex("ir_numbox_set_cat", idx);
     var cat = ir_categories[idx];
     var raw = listFilesByExt(cat.abspath, ".wav");
     ir_files = _makeDisplayFiles(raw, /\.(aiff?|wav)$/i, trim_prefix_ir);
@@ -299,6 +340,7 @@ function set_ir_root() {
 function select_ir_category(idx) {
     idx = parseInt(idx, 10);
     if (isNaN(idx) || idx < 0 || idx >= ir_categories.length) return;
+    syncPushIndex("ir_numbox_set_cat", idx);
     _populate_ir_files(idx);
     if (ir_files.length > 0) select_ir(0);
 }
@@ -307,12 +349,31 @@ function select_ir(idx) {
     idx = parseInt(idx, 10);
     if (isNaN(idx) || idx < 0 || idx >= ir_files.length) return;
     selected_ir_file = idx;
+    syncPushIndex("ir_numbox_set_file", idx);
     var f = ir_files[idx];
     outlet(OUT_IR_LOAD, "read", f.abspath);
     outlet(OUT_IR_NORM, 0.12589);
     setStatus("Loading IR: " + f.name);
     messnamed("nam_state_set_ir_relpath", f.relpath);
     _coverIrDrop();
+}
+
+function select_ir_cat_by_push(idx) {
+    idx = parseInt(idx, 10);
+    if (isNaN(idx) || ir_categories.length === 0) return;
+    if (idx >= ir_categories.length) idx = ir_categories.length - 1;
+    if (idx < 0) idx = 0;
+    outlet(OUT_IR_CAT, "set", idx);
+    select_ir_category(idx);
+}
+
+function select_ir_file_by_push(idx) {
+    idx = parseInt(idx, 10);
+    if (isNaN(idx) || ir_files.length === 0) return;
+    if (idx >= ir_files.length) idx = ir_files.length - 1;
+    if (idx < 0) idx = 0;
+    outlet(OUT_IR, "set", idx);
+    select_ir(idx);
 }
 
 // ─── NAM navigation ───────────────────────────────────────────────────────
@@ -450,7 +511,7 @@ function rehydrate() {
     if (state.nam_root) {
         nam_root = maxPathToPosix(state.nam_root);
         nam_categories = _buildCategories(nam_root, ".nam");
-        if (nam_categories.length > 0) {
+            if (nam_categories.length > 0) {
             var nrel = state.nam_relpath || "";
             var nresolved = resolveRelpath(nam_categories, nrel, ".nam");
             var nCatIdx = nresolved.catIdx >= 0 ? nresolved.catIdx : 0;
@@ -472,7 +533,7 @@ function rehydrate() {
     if (state.ir_root) {
         ir_root = maxPathToPosix(state.ir_root);
         ir_categories = _buildCategories(ir_root, ".wav");
-        if (ir_categories.length > 0) {
+            if (ir_categories.length > 0) {
             var irel = state.ir_relpath || "";
             var iresolved = resolveRelpath(ir_categories, irel, ".wav");
             var iCatIdx = iresolved.catIdx >= 0 ? iresolved.catIdx : 0;
@@ -523,9 +584,13 @@ if (typeof module !== "undefined" && module.exports) {
         set_nam_root: set_nam_root,
         select_nam_category: select_nam_category,
         select_nam_model: select_nam_model,
+        select_nam_cat_by_push: select_nam_cat_by_push,
+        select_nam_model_by_push: select_nam_model_by_push,
         set_ir_root: set_ir_root,
         select_ir_category: select_ir_category,
         select_ir: select_ir,
+        select_ir_cat_by_push: select_ir_cat_by_push,
+        select_ir_file_by_push: select_ir_file_by_push,
         set_trim_prefix_nam: set_trim_prefix_nam,
         set_trim_prefix_ir: set_trim_prefix_ir,
         rehydrate: rehydrate,

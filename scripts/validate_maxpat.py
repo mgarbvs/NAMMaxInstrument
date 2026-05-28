@@ -44,9 +44,20 @@ def validate(maxpat_path):
     patcher = doc.get("patcher") or {}
 
     if "parameters" in patcher:
-        errors.append(
-            "top-level 'parameters' key present in patcher (Live/Max param_banks crash trap)"
-        )
+        banks = (patcher["parameters"] or {}).get("parameterbanks", {})
+        if not banks:
+            errors.append(
+                "parameterbanks missing or empty (Live/Max param_banks crash trap)"
+            )
+        else:
+            all_dash = all(
+                all(slot == "-" for slot in bank.get("parameters", []))
+                for bank in banks.values()
+            )
+            if all_dash:
+                errors.append(
+                    "parameterbanks present but all slots are '-' (param_banks crash trap)"
+                )
 
     longnames = {}
     has_thisdevice = False

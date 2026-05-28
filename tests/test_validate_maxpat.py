@@ -47,10 +47,32 @@ def test_clean_passes():
     assert rc == 0, f"clean patcher should pass; got rc={rc} err={err}"
 
 
-def test_top_level_parameters_fails():
+def test_empty_parameterbanks_fails():
+    # Empty parameterbanks dict triggers the param_banks_fromdictionary crash.
     doc = base_patcher(extra_top={"parameters": {"parameterbanks": {}}})
     rc, _, err = run_validator(doc)
-    assert rc == 1 and "parameters" in err, f"expected parameters error; got rc={rc} err={err}"
+    assert rc == 1 and "parameterbanks" in err, f"expected parameterbanks error; got rc={rc} err={err}"
+
+
+def test_all_dash_parameterbanks_fails():
+    # Banks present but every slot is "-" — also crashes.
+    doc = base_patcher(extra_top={"parameters": {
+        "parameterbanks": {"0": {"index": 0, "name": "x",
+                                 "parameters": ["-", "-", "-", "-", "-", "-", "-", "-"]}}
+    }})
+    rc, _, err = run_validator(doc)
+    assert rc == 1 and "parameterbanks" in err, f"expected parameterbanks error; got rc={rc} err={err}"
+
+
+def test_populated_parameterbanks_passes():
+    # Populated parameterbanks (the working Push pattern) must be allowed.
+    doc = base_patcher(extra_top={"parameters": {
+        "parameterbanks": {"0": {"index": 0, "name": "Main",
+                                 "parameters": ["Input", "-", "-", "-", "-", "-", "-", "-"]}},
+        "inherited_shortname": 1,
+    }})
+    rc, _, err = run_validator(doc)
+    assert rc == 0, f"populated parameterbanks should pass; got rc={rc} err={err}"
 
 
 def test_longname_collision_fails():
@@ -84,7 +106,9 @@ def test_param_enable_without_longname_fails():
 
 TESTS = [
     test_clean_passes,
-    test_top_level_parameters_fails,
+    test_empty_parameterbanks_fails,
+    test_all_dash_parameterbanks_fails,
+    test_populated_parameterbanks_passes,
     test_longname_collision_fails,
     test_presentation_band_fails,
     test_missing_thisdevice_fails,

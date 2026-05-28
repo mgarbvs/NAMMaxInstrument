@@ -180,7 +180,37 @@ def live_text_button(bid, label, longname, shortname, px, py, pw=100, ph=22):
 
 
 def live_nav_button(bid, label, longname, shortname, px, py):
-    return live_text_button(bid, label, longname, shortname, px, py, pw=22, ph=22)
+    b = live_text_button(bid, label, longname, shortname, px, py, pw=22, ph=22)
+    b["box"]["saved_attribute_attributes"]["valueof"]["parameter_invisible"] = 1
+    return b
+
+
+def live_push_menu(bid, longname, shortname, py_patch=320, num_slots=100):
+    """Hidden live.menu for Push 3 encoder control.
+
+    parameter_enable 1 so it appears on Push; hidden 1 so it stays out of
+    the Max patch view. Enum type with 1-based index strings ("1"…"100") so
+    Push shows a scrollable list rather than a continuous dial.
+    Push 3 parameter metadata cannot be updated at runtime, so the list
+    always shows 1-based indices — actual model names cannot be injected.
+    """
+    enum = [str(i) for i in range(1, num_slots + 1)]
+    return box(
+        id=bid, maxclass="live.menu",
+        numinlets=1, numoutlets=2, outlettype=["int", "bang"],
+        patching_rect=[940, py_patch, 60, 22],
+        parameter_enable=1,
+        hidden=1,
+        saved_attribute_attributes={"valueof": {
+            "parameter_longname": longname,
+            "parameter_shortname": shortname,
+            "parameter_type": 2,
+            "parameter_enum": enum,
+            "parameter_initial_enable": 1,
+            "parameter_initial": [0],
+        }},
+        varname=bid,
+    )
 
 
 def live_toggle(bid, longname, shortname, default, px, py):
@@ -235,7 +265,7 @@ def build():
     lines.append(line("half", 0, "in_gain", 1))
 
     # ── out_gain [263, 5, 55, 90] — NAM section output, before TONE/IR stages ──
-    boxes.append(live_gain("out_gain", "NAM Out", "NAM", px=263, py=5))
+    boxes.append(live_gain("out_gain", "NAM Out", "Out", px=263, py=5))
 
     # ── State management ──────────────────────────────────────────────────────
     boxes.append(newobj("nodestate", "node.script nam_state.js @autostart 1",
@@ -403,6 +433,31 @@ def build():
                             500 + px, 424, numinlets=1, numoutlets=1, outlettype=[""], w=150))
         lines.append(line(bid, 0, f"pre_{bid}", 0))
         lines.append(line(f"pre_{bid}", 0, "jsloader", 0))
+
+    # ── Push 3 shadow menus for NAM (hidden live.menu, enum "1"…"100") ──────────
+    # Push encoder drives the menu → select_*_by_push → jsloader.
+    # syncPushIndex (via receive/prepend set) keeps the menu current when
+    # selection changes from the computer UI, nav buttons, or rehydrate.
+    # Enum type gives a scrollable-list UX on Push 3 instead of a continuous dial.
+    # Actual model names cannot be injected at runtime (Push 3 limitation).
+    for bid, longname, shortname, handler, rcv_name, py_p in [
+        ("nam_cat_idx",   "NAM Cat", "NamCat", "select_nam_cat_by_push",   "nam_numbox_set_cat",   320),
+        ("nam_model_idx", "Model",   "Model",  "select_nam_model_by_push", "nam_numbox_set_model", 346),
+    ]:
+        pre_id    = f"pre_push_{bid}"
+        rcv_id    = f"rcv_set_{bid}"
+        pre_set_id = f"pre_set_{bid}"
+        boxes.append(live_push_menu(bid, longname, shortname, py_patch=py_p))
+        boxes.append(newobj(pre_id, f"prepend {handler}",
+                            940, py_p + 28, numinlets=1, numoutlets=1, outlettype=[""], w=250))
+        boxes.append(newobj(rcv_id, f"receive {rcv_name}",
+                            1210, py_p, numinlets=1, numoutlets=1, outlettype=[""], w=210))
+        boxes.append(newobj(pre_set_id, "prepend set",
+                            1210, py_p + 28, numinlets=1, numoutlets=1, outlettype=[""], w=80))
+        lines.append(line(bid, 0, pre_id, 0))
+        lines.append(line(pre_id, 0, "jsloader", 0))
+        lines.append(line(rcv_id, 0, pre_set_id, 0))
+        lines.append(line(pre_set_id, 0, bid, 0))
 
     # NAM live.drop [57, 0, 206, 100]
     boxes.append(box(
@@ -771,6 +826,26 @@ def build():
                             numinlets=1, numoutlets=1, outlettype=[""], w=160))
         lines.append(line(bid, 0, f"pre_{bid}", 0))
         lines.append(line(f"pre_{bid}", 0, "jsloader", 0))
+
+    # ── Push 3 shadow menus for IR category and file ─────────────────────────────
+    for bid, longname, shortname, handler, rcv_name, py_p in [
+        ("ir_cat_idx",  "IR Cat",  "IRCat",  "select_ir_cat_by_push",  "ir_numbox_set_cat",  552),
+        ("ir_file_idx", "IR File", "IRFile", "select_ir_file_by_push", "ir_numbox_set_file", 578),
+    ]:
+        pre_id     = f"pre_push_{bid}"
+        rcv_id     = f"rcv_set_{bid}"
+        pre_set_id = f"pre_set_{bid}"
+        boxes.append(live_push_menu(bid, longname, shortname, py_patch=py_p))
+        boxes.append(newobj(pre_id, f"prepend {handler}",
+                            940, py_p + 28, numinlets=1, numoutlets=1, outlettype=[""], w=240))
+        boxes.append(newobj(rcv_id, f"receive {rcv_name}",
+                            1210, py_p, numinlets=1, numoutlets=1, outlettype=[""], w=210))
+        boxes.append(newobj(pre_set_id, "prepend set",
+                            1210, py_p + 28, numinlets=1, numoutlets=1, outlettype=[""], w=80))
+        lines.append(line(bid, 0, pre_id, 0))
+        lines.append(line(pre_id, 0, "jsloader", 0))
+        lines.append(line(rcv_id, 0, pre_set_id, 0))
+        lines.append(line(pre_set_id, 0, bid, 0))
 
     # IR live.drop [642, 0, 320, 100]
     boxes.append(box(
