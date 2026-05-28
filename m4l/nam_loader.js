@@ -41,9 +41,79 @@ var trim_prefix_nam = 1;
 var trim_prefix_ir  = 1;
 var _patcher = null;
 
+// LiveAPI observers for Push 3 out-of-range clamping.
+// .observe() is not available in this Max JS context; use .property = "value".
+// Function-object form required (string-name form gives "invalid path").
+var _lapi_obs   = {};  // varname → LiveAPI observer
+var _lapi_guard = {};  // varname → bool (re-entrancy guard)
+
+function _pobs_nam_cat(args)   { _pobs_clamp("nam_cat_idx",   args); }
+function _pobs_nam_model(args) { _pobs_clamp("nam_model_idx", args); }
+function _pobs_ir_cat(args)    { _pobs_clamp("ir_cat_idx",    args); }
+function _pobs_ir_file(args)   { _pobs_clamp("ir_file_idx",   args); }
+
+function _pobs_clamp(varname, args) {
+    if (_lapi_guard[varname] || !args || args[0] !== "value") return;
+    var v = parseInt(args[1], 10);
+    var cnt;
+    if      (varname === "nam_cat_idx")   cnt = nam_categories.length;
+    else if (varname === "nam_model_idx") cnt = nam_models.length;
+    else if (varname === "ir_cat_idx")    cnt = ir_categories.length;
+    else                                  cnt = ir_files.length;
+    if (isNaN(v) || cnt === 0 || v < cnt) return;
+    var c = cnt - 1;
+    _lapi_guard[varname] = true;
+    _lapi_obs[varname].set("value", c);
+    _lapi_guard[varname] = false;
+    if      (varname === "nam_cat_idx")   select_nam_cat_by_push(c);
+    else if (varname === "nam_model_idx") select_nam_model_by_push(c);
+    else if (varname === "ir_cat_idx")    select_ir_cat_by_push(c);
+    else                                  select_ir_file_by_push(c);
+}
+
+var _pobs_cbfns = {
+    "nam_cat_idx":   _pobs_nam_cat,
+    "nam_model_idx": _pobs_nam_model,
+    "ir_cat_idx":    _pobs_ir_cat,
+    "ir_file_idx":   _pobs_ir_file
+};
+
+function _setupPushObs(varname, shortname) {
+    try {
+        var dev = new LiveAPI("this_device");
+        var n   = dev.getcount("parameters");
+        for (var i = 0; i < n; i++) {
+            var p = new LiveAPI("this_device parameters " + i);
+            if (String(p.get("name")) === shortname) {
+                _lapi_guard[varname] = false;
+                _lapi_obs[varname] = new LiveAPI(_pobs_cbfns[varname], "this_device parameters " + i);
+                _lapi_obs[varname].property = "value";
+                post("push obs OK: " + varname + " param[" + i + "]\n");
+                return;
+            }
+        }
+        post("push obs NOT FOUND: " + varname + "/" + shortname + "\n");
+    } catch(e) {
+        post("push obs ERR: " + varname + " " + e + "\n");
+    }
+}
+
+var _obs_task = null;
+
+function _setupAllPushObs() {
+    _setupPushObs("nam_cat_idx",   "NamCat");
+    _setupPushObs("nam_model_idx", "Model");
+    _setupPushObs("ir_cat_idx",    "IRCat");
+    _setupPushObs("ir_file_idx",   "IRFile");
+}
+
 function loadbang() {
     _patcher = this.patcher;
     outlet(OUT_IR_NORM, 1.0);  // pass-through until an IR file is loaded
+    // LiveAPI("this_device") is not available at loadbang time — defer until
+    // Live has finished registering the device (matches the 1000ms get_all delay).
+    _obs_task = new Task(_setupAllPushObs, this);
+    _obs_task.schedule(1500);
 }
 
 function _coverNamDrop() {
@@ -182,13 +252,22 @@ function _makeDisplayFiles(rawFiles, stripExtRe, trimFlag) {
 
 // ─── Umenu population ─────────────────────────────────────────────────
 // The category/model/IR menus are umenu (not live.menu) for the computer UI.
-// Push 3 uses hidden live.menu shadows (enum, "1"…"100" baked in at build
-// time). The enum cannot be updated at runtime — all approaches tested:
-// _parameter_range (same-count and count-change), LOM set("items"),
-// setattr, parameter_visibility modes — all fail to update Push 3's display.
-// Clamping in select_*_by_push gives Push the correct upper bound via value
-// feedback; count-changing _parameter_range breaks this by making the
-// live.menu silently discard out-of-range values before they reach JS.
+// Push 3 uses hidden live.menu shadows (enum, "1"…"100" initial).
+// _syncPushNames sends _parameter_range with exactly N actual names, changing
+// the Max-internal count from 100 to N. The LiveAPI observers in loadbang()
+// intercept out-of-range values (which the N-item live.menu would silently
+// discard) and clamp them via LiveAPI.set("value"), restoring the Push 3
+// feedback loop that teaches it the effective upper bound.
+
+// Send _parameter_range with the actual N item names (count change 100→N).
+function _syncPushNames(varname, items) {
+    if (!_patcher) _patcher = this.patcher;
+    var b = _patcher && _patcher.getnamed(varname);
+    if (!b || items.length === 0) return;
+    var names = [];
+    for (var i = 0; i < items.length; i++) names.push(items[i].name || "");
+    Function.prototype.apply.call(b.message, b, ["_parameter_range"].concat(names));
+}
 
 function fillMenu(outIdx, items, selectIdx) {
     outlet(outIdx, "clear");
@@ -229,6 +308,7 @@ function _populate_nam_models(idx) {
     for (var i = 0; i < nam_models.length; i++) {
         nam_models[i].relpath = cat.name + "/" + nam_models[i].origname;
     }
+    _syncPushNames("nam_model_idx", nam_models);
     if (nam_models.length === 0) {
         outlet(OUT_NAM_MODEL, "clear");
         setStatus("No .nam files in " + cat.name);
@@ -243,6 +323,7 @@ function set_nam_root() {
     if (!p) { setStatus("error: empty NAM root"); return; }
     nam_root = p;
     nam_categories = _buildCategories(p, ".nam");
+    _syncPushNames("nam_cat_idx", nam_categories);
     if (nam_categories.length === 0) {
         setStatus("No category subfolders in NAM root");
         outlet(OUT_NAM_CAT, "clear");
@@ -311,6 +392,7 @@ function _populate_ir_files(idx) {
     for (var i = 0; i < ir_files.length; i++) {
         ir_files[i].relpath = cat.name + "/" + ir_files[i].origname;
     }
+    _syncPushNames("ir_file_idx", ir_files);
     if (ir_files.length === 0) {
         outlet(OUT_IR, "clear");
         setStatus("No .wav files in " + cat.name);
@@ -325,6 +407,7 @@ function set_ir_root() {
     if (!p) { setStatus("error: empty IR root"); return; }
     ir_root = p;
     ir_categories = _buildCategories(p, ".wav");
+    _syncPushNames("ir_cat_idx", ir_categories);
     if (ir_categories.length === 0) {
         setStatus("No category subfolders in IR root");
         outlet(OUT_IR_CAT, "clear");
@@ -511,6 +594,7 @@ function rehydrate() {
     if (state.nam_root) {
         nam_root = maxPathToPosix(state.nam_root);
         nam_categories = _buildCategories(nam_root, ".nam");
+        _syncPushNames("nam_cat_idx", nam_categories);
             if (nam_categories.length > 0) {
             var nrel = state.nam_relpath || "";
             var nresolved = resolveRelpath(nam_categories, nrel, ".nam");
@@ -533,6 +617,7 @@ function rehydrate() {
     if (state.ir_root) {
         ir_root = maxPathToPosix(state.ir_root);
         ir_categories = _buildCategories(ir_root, ".wav");
+        _syncPushNames("ir_cat_idx", ir_categories);
             if (ir_categories.length > 0) {
             var irel = state.ir_relpath || "";
             var iresolved = resolveRelpath(ir_categories, irel, ".wav");
