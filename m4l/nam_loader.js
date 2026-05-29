@@ -192,7 +192,7 @@ function _populateBanks() {
     // Bank 1 (IR) is created separately in add_ir_bank() at 30ms to avoid
     // racing with this edit — new fires on_banks_changed which can cause a
     // transient bank_count=0 when fired in the same tick as edit.
-    b.message("edit", 0, "NAM", 0, "NAM Cat", 1, "NAM Model " + catN);
+    b.message("edit", 0, "NAM", 0, "NAM Cat", 1, "NAM Model " + catN, 2, "NAM Dry/Wet", 3, "Bypass");
     _banks_created = true;
     post("live_banks populated: NAM=Model" + catN + "\n");
     b.message("getcount");

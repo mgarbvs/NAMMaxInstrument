@@ -116,16 +116,16 @@ live.thisdevice → delay 10ms → init()
              → fires bank_parameters_changed → Push updates display ✓
 ```
 
-**`new` at loadbang** (params not registered):
-- `b.message("new", 0, "NAM", "NAM Cat", "NAM Model 0")` — bank count goes to 1, but name may be empty string
-- `b.message("new", 1, "IR", "IR Cat", "IR File 0")` — bank count goes to 2
+**`new` at loadbang** — minimal placeholder only:
+- `b.message("new", 0, "NAM", "NAM Cat", "NAM Model 0")` — bank count goes to 1
+- Keep the `new` call as short as possible. Do NOT include all desired slots here — only what's needed to ensure count > 0. Adding extra registered-param names (e.g. "NAM Dry/Wet") to the `new` call at loadbang can shift the timing of the 30ms `on_banks_changed` race and break first-load.
 
-**`edit` at 10ms** (params registered) — SINGLE combined call per bank:
+**`edit` at 10ms** (params registered) — put ALL real slot assignments here:
 ```javascript
-b.message("edit", 0, "NAM", 0, "NAM Cat", 1, "NAM Model " + catIdx);
+b.message("edit", 0, "NAM", 0, "NAM Cat", 1, "NAM Model " + catIdx, 2, "NAM Dry/Wet", 3, "Bypass");
 b.message("edit", 1, "IR",  0, "IR Cat",  1, "IR File "  + irIdx);
 ```
-- Sets bank name AND both slots atomically
+- Sets bank name AND all slots atomically in one call
 - Fires one `bank_parameters_changed` per bank
 - Using two separate `edit` calls (one per slot) fires two events rapidly — avoid this
 
@@ -145,4 +145,5 @@ b.message("edit", bankId, "-", slotIdx, paramName);
 - **Never call `new` after live.thisdevice.** `new` fires `on_banks_changed`, which causes Push to re-call `create_device_bank`. During the transient reset inside `new`, `get_bank_count()` may briefly return 0, causing Push to fall back to `DeviceParameterBank` (all-columns). After loadbang, use only `edit` — it fires `bank_parameters_changed` instead, which only updates the parameter list without re-evaluating bank type.
 - **`edit` with a real name vs `-`:** When `_populateBanks()` runs at 10ms, the bank name from the loadbang `new` call may be empty (parameter hub not yet connected). Use `edit bank_id "RealName" ...` to set it properly. Use `-` in subsequent per-slot updates to preserve the already-set name.
 - **Using a real name in two separate `edit` calls breaks banks.** Combine into one call.
+- **Keep `new` at loadbang minimal.** Only include 1–2 placeholder slot names. Do not include all desired slots — put those in the `edit` at 10ms. Extra params in the loadbang `new` call (especially registered params like `live.dial`/`live.toggle` long names) can disrupt the 30ms `on_banks_changed` timing and cause all-columns on first load.
 - **`parameter_enable=0` on navigation/display params** prevents them from creating an unwanted main bank page on Push.
