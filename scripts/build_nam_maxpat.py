@@ -33,7 +33,98 @@ State: nam_state.js (Node-for-Max) + nam_loader.js (Max-JS, 7 outlets).
 """
 import json
 import os
+import re
 import sys
+
+# ── Library roots (baked into Push 3 parameter_enum at build time) ───────────
+# Edit these paths if the library moves, then rebuild + reload device.
+NAM_ROOT = os.path.expanduser("~/Documents/NAM/Models")
+IR_ROOT  = os.path.expanduser("~/Documents/NAM/IRs")
+
+
+def _scan_subdirs(root):
+    try:
+        return sorted(n for n in os.listdir(root)
+                      if not n.startswith(".") and os.path.isdir(os.path.join(root, n)))
+    except OSError:
+        return []
+
+
+def _scan_files(root, exts):
+    try:
+        return sorted(n for n in os.listdir(root)
+                      if not n.startswith(".") and any(n.lower().endswith(e) for e in exts))
+    except OSError:
+        return []
+
+
+def _common_prefix(strs):
+    if not strs:
+        return ""
+    p = strs[0]
+    for s in strs[1:]:
+        j = 0
+        while j < len(p) and j < len(s) and p[j] == s[j]:
+            j += 1
+        p = p[:j]
+        if not p:
+            return ""
+    return p
+
+
+def _trim_to_word_bound(s):
+    i = len(s)
+    while i > 0 and s[i - 1] != " ":
+        i -= 1
+    return s[:i]
+
+
+def _make_display_names(filenames, strip_ext_re):
+    noext = [re.sub(strip_ext_re, "", n, flags=re.IGNORECASE) for n in filenames]
+    prefix = _trim_to_word_bound(_common_prefix(noext)) if len(filenames) > 1 else ""
+    result = []
+    for n in noext:
+        d = re.sub(r"^[\s\-_]+", "", n[len(prefix):]) if prefix else n
+        result.append(d or n)
+    return result
+
+
+def _build_push_enums():
+    """Scan library at build time and return enum arrays for shadow menus.
+
+    Keys: nam_cat_idx, ir_cat_idx, nam_model_idx (cat0, compat), ir_file_idx (cat0, compat),
+    Model0..ModelN (per-category NAM), IRFile0..IRFileM (per-category IR).
+    """
+    nam_cats = _scan_subdirs(NAM_ROOT) or [""]
+    ir_cats  = _scan_subdirs(IR_ROOT)  or [""]
+
+    result = {
+        "nam_cat_idx": nam_cats,
+        "ir_cat_idx":  ir_cats,
+    }
+
+    for i, cat in enumerate(nam_cats):
+        if cat:
+            files = _scan_files(os.path.join(NAM_ROOT, cat), [".nam"])
+            result[f"Model{i}"] = _make_display_names(files, r"\.[nN][aA][mM]$") if files else [""]
+        else:
+            result[f"Model{i}"] = [""]
+
+    for i, cat in enumerate(ir_cats):
+        if cat:
+            files = _scan_files(os.path.join(IR_ROOT, cat), [".wav", ".aif", ".aiff"])
+            result[f"IRFile{i}"] = _make_display_names(files, r"\.(wav|aif|aiff)$") if files else [""]
+        else:
+            result[f"IRFile{i}"] = [""]
+
+    # Backward-compat keys used by tests and the original single-menu boxes.
+    result["nam_model_idx"] = result.get("Model0", [""])
+    result["ir_file_idx"]   = result.get("IRFile0", [""])
+
+    return result
+
+
+_PUSH_ENUMS = _build_push_enums()
 
 # ── Presentation offset for the combined device ──────────────────────────────
 # Non-presentation patching objects use absolute (x, y); presentation objects
@@ -185,16 +276,14 @@ def live_nav_button(bid, label, longname, shortname, px, py):
     return b
 
 
-def live_push_menu(bid, longname, shortname, py_patch=320, num_slots=100):
+def live_push_menu(bid, longname, shortname, py_patch=320):
     """Hidden live.menu for Push 3 encoder control.
 
     parameter_enable 1 so it appears on Push; hidden 1 so it stays out of
-    the Max patch view. Enum type with 1-based index strings ("1"…"100") so
-    Push shows a scrollable list rather than a continuous dial.
-    Push 3 parameter metadata cannot be updated at runtime, so the list
-    always shows 1-based indices — actual model names cannot be injected.
+    the Max patch view. Enum is baked from the library scan at build time so
+    Push shows real names after a device reload + power cycle.
     """
-    enum = [str(i) for i in range(1, num_slots + 1)]
+    enum = _PUSH_ENUMS.get(bid) or [str(i) for i in range(1, 101)]
     return box(
         id=bid, maxclass="live.menu",
         numinlets=1, numoutlets=2, outlettype=["int", "bang"],
@@ -284,6 +373,24 @@ def build():
     lines.append(line("thisdev", 0, "delay_startup", 0))
     lines.append(line("delay_startup", 0, "msg_getall", 0))
     lines.append(line("msg_getall", 0, "nodestate", 0))
+
+    # 10ms: init_banks — fills bank 0 (NAM) via edit. edit fires bank_parameters_changed
+    # (safe). Bank 1 (IR) is created separately at 30ms to avoid racing with this edit.
+    boxes.append(newobj("delay_init_banks", "delay 10", 700, 6,
+                        numinlets=2, numoutlets=1, outlettype=["bang"], w=80))
+    boxes.append(msgbox("msg_init_banks", "init_banks", 800, 6, w=120))
+    lines.append(line("thisdev", 0, "delay_init_banks", 0))
+    lines.append(line("delay_init_banks", 0, "msg_init_banks", 0))
+    lines.append(line("msg_init_banks", 0, "jsloader", 0))
+
+    # 30ms: add_ir_bank — creates bank 1 (IR) via new in its own tick.
+    # Separating from init_banks avoids on_banks_changed racing with bank_parameters_changed.
+    boxes.append(newobj("delay_ir_bank", "delay 30", 700, 36,
+                        numinlets=2, numoutlets=1, outlettype=["bang"], w=80))
+    boxes.append(msgbox("msg_ir_bank", "add_ir_bank", 800, 36, w=120))
+    lines.append(line("thisdev", 0, "delay_ir_bank", 0))
+    lines.append(line("delay_ir_bank", 0, "msg_ir_bank", 0))
+    lines.append(line("msg_ir_bank", 0, "jsloader", 0))
 
     boxes.append(newobj("pre_sr_changed", "prepend sr_changed",
                         600, 6, numinlets=1, numoutlets=1, outlettype=[""], w=140))
@@ -434,15 +541,13 @@ def build():
         lines.append(line(bid, 0, f"pre_{bid}", 0))
         lines.append(line(f"pre_{bid}", 0, "jsloader", 0))
 
-    # ── Push 3 shadow menus for NAM (hidden live.menu, enum "1"…"100") ──────────
-    # Push encoder drives the menu → select_*_by_push → jsloader.
-    # syncPushIndex (via receive/prepend set) keeps the menu current when
-    # selection changes from the computer UI, nav buttons, or rehydrate.
-    # Enum type gives a scrollable-list UX on Push 3 instead of a continuous dial.
-    # Actual model names cannot be injected at runtime (Push 3 limitation).
+    # ── Push 3 shadow menus for NAM ───────────────────────────────────────────
+    # Category menu: same wiring as before (receive/prepend-set for index sync).
+    # Model menu (nam_model_idx): kept for test backward-compat; not in any bank.
+    # Per-category menus (Model0…ModelN): JS sends to these via patcher.getnamed;
+    #   live.banks swaps which one occupies bank slot 1 when the category changes.
     for bid, longname, shortname, handler, rcv_name, py_p in [
-        ("nam_cat_idx",   "NAM Cat", "NamCat", "select_nam_cat_by_push",   "nam_numbox_set_cat",   320),
-        ("nam_model_idx", "Model",   "Model",  "select_nam_model_by_push", "nam_numbox_set_model", 346),
+        ("nam_cat_idx", "NAM Cat", "NamCat", "select_nam_cat_by_push", "nam_numbox_set_cat", 320),
     ]:
         pre_id    = f"pre_push_{bid}"
         rcv_id    = f"rcv_set_{bid}"
@@ -458,6 +563,40 @@ def build():
         lines.append(line(pre_id, 0, "jsloader", 0))
         lines.append(line(rcv_id, 0, pre_set_id, 0))
         lines.append(line(pre_set_id, 0, bid, 0))
+
+    # Per-category NAM model menus — one hidden live.menu per category folder.
+    # JS uses patcher.getnamed("Model{i}") to set the index; no receive wiring needed.
+    nam_cat_list = _PUSH_ENUMS.get("nam_cat_idx", [])
+    for i, _cat in enumerate(nam_cat_list):
+        mbid   = f"Model{i}"
+        mpre   = f"pre_push_{mbid}"
+        py_m   = 380 + i * 24
+        boxes.append(live_push_menu(mbid, f"NAM Model {i}", f"Model{i}", py_patch=py_m))
+        boxes.append(newobj(mpre, "prepend select_nam_model_by_push",
+                            940, py_m + 24, numinlets=1, numoutlets=1, outlettype=[""], w=270))
+        lines.append(line(mbid, 0, mpre, 0))
+        lines.append(line(mpre, 0, "jsloader", 0))
+
+    # Per-category IR file menus — one hidden live.menu per IR category folder.
+    ir_cat_list = _PUSH_ENUMS.get("ir_cat_idx", [])
+    ir_base_y = 380 + len(nam_cat_list) * 24 + 40
+    for i, _cat in enumerate(ir_cat_list):
+        fbid  = f"IRFile{i}"
+        fpre  = f"pre_push_{fbid}"
+        py_f  = ir_base_y + i * 24
+        boxes.append(live_push_menu(fbid, f"IR File {i}", f"IRFile{i}", py_patch=py_f))
+        boxes.append(newobj(fpre, "prepend select_ir_file_by_push",
+                            940, py_f + 24, numinlets=1, numoutlets=1, outlettype=[""], w=260))
+        lines.append(line(fbid, 0, fpre, 0))
+        lines.append(line(fpre, 0, "jsloader", 0))
+
+    # live.banks — JS sends new/edit messages via patcher.getnamed("live_banks")
+    # to swap which per-category model/file param occupies each bank slot.
+    boxes.append(newobj("live_banks", "live.banks",
+                        1450, 320, numinlets=1, numoutlets=1, outlettype=[""], w=100))
+    boxes.append(newobj("print_banks", "print banks",
+                        1450, 346, numinlets=1, numoutlets=0, outlettype=[], w=100))
+    lines.append(line("live_banks", 0, "print_banks", 0))
 
     # NAM live.drop [57, 0, 206, 100]
     boxes.append(box(
@@ -828,9 +967,11 @@ def build():
         lines.append(line(f"pre_{bid}", 0, "jsloader", 0))
 
     # ── Push 3 shadow menus for IR category and file ─────────────────────────────
+    # ir_cat_idx: same wiring as before (receive/prepend-set for index sync).
+    # ir_file_idx: kept for test backward-compat; not assigned to any bank.
+    # Per-category IRFile menus are added in the NAM section above.
     for bid, longname, shortname, handler, rcv_name, py_p in [
-        ("ir_cat_idx",  "IR Cat",  "IRCat",  "select_ir_cat_by_push",  "ir_numbox_set_cat",  552),
-        ("ir_file_idx", "IR File", "IRFile", "select_ir_file_by_push", "ir_numbox_set_file", 578),
+        ("ir_cat_idx", "IR Cat", "IRCat", "select_ir_cat_by_push", "ir_numbox_set_cat", 552),
     ]:
         pre_id     = f"pre_push_{bid}"
         rcv_id     = f"rcv_set_{bid}"

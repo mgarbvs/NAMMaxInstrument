@@ -309,6 +309,82 @@
 			},
 			{
 				"box": {
+					"id": "delay_init_banks",
+					"maxclass": "newobj",
+					"numinlets": 2,
+					"numoutlets": 1,
+					"outlettype": [
+						"bang"
+					],
+					"patching_rect": [
+						700,
+						6,
+						80,
+						22
+					],
+					"text": "delay 10",
+					"varname": "delay_init_banks"
+				}
+			},
+			{
+				"box": {
+					"id": "msg_init_banks",
+					"maxclass": "message",
+					"numinlets": 2,
+					"numoutlets": 1,
+					"outlettype": [
+						""
+					],
+					"patching_rect": [
+						800,
+						6,
+						120,
+						22
+					],
+					"text": "init_banks",
+					"varname": "msg_init_banks"
+				}
+			},
+			{
+				"box": {
+					"id": "delay_ir_bank",
+					"maxclass": "newobj",
+					"numinlets": 2,
+					"numoutlets": 1,
+					"outlettype": [
+						"bang"
+					],
+					"patching_rect": [
+						700,
+						36,
+						80,
+						22
+					],
+					"text": "delay 30",
+					"varname": "delay_ir_bank"
+				}
+			},
+			{
+				"box": {
+					"id": "msg_ir_bank",
+					"maxclass": "message",
+					"numinlets": 2,
+					"numoutlets": 1,
+					"outlettype": [
+						""
+					],
+					"patching_rect": [
+						800,
+						36,
+						120,
+						22
+					],
+					"text": "add_ir_bank",
+					"varname": "msg_ir_bank"
+				}
+			},
+			{
+				"box": {
 					"id": "pre_sr_changed",
 					"maxclass": "newobj",
 					"numinlets": 1,
@@ -1240,106 +1316,20 @@
 							"parameter_shortname": "NamCat",
 							"parameter_type": 2,
 							"parameter_enum": [
-								"1",
-								"2",
-								"3",
-								"4",
-								"5",
-								"6",
-								"7",
-								"8",
-								"9",
-								"10",
-								"11",
-								"12",
-								"13",
-								"14",
-								"15",
-								"16",
-								"17",
-								"18",
-								"19",
-								"20",
-								"21",
-								"22",
-								"23",
-								"24",
-								"25",
-								"26",
-								"27",
-								"28",
-								"29",
-								"30",
-								"31",
-								"32",
-								"33",
-								"34",
-								"35",
-								"36",
-								"37",
-								"38",
-								"39",
-								"40",
-								"41",
-								"42",
-								"43",
-								"44",
-								"45",
-								"46",
-								"47",
-								"48",
-								"49",
-								"50",
-								"51",
-								"52",
-								"53",
-								"54",
-								"55",
-								"56",
-								"57",
-								"58",
-								"59",
-								"60",
-								"61",
-								"62",
-								"63",
-								"64",
-								"65",
-								"66",
-								"67",
-								"68",
-								"69",
-								"70",
-								"71",
-								"72",
-								"73",
-								"74",
-								"75",
-								"76",
-								"77",
-								"78",
-								"79",
-								"80",
-								"81",
-								"82",
-								"83",
-								"84",
-								"85",
-								"86",
-								"87",
-								"88",
-								"89",
-								"90",
-								"91",
-								"92",
-								"93",
-								"94",
-								"95",
-								"96",
-								"97",
-								"98",
-								"99",
-								"100"
+								"1960 Fender Tweed Deluxe 5E3",
+								"1970s Sunn Concert Lead + 2x15 Cab",
+								"API 512c",
+								"Avalon AD2022 Preamp",
+								"Dumble Steel String Singer",
+								"Fender Deluxe Reverb '65 Reissue _ Clean _ SM57 + Royer R-121 + Room",
+								"Fender Deluxe Reverb II - clean and overdrive",
+								"Fender Super Reverb 1977",
+								"J. Rockett _The Jeff_ Archer",
+								"Loose files",
+								"Neve 31102 Stereo Pair Console Pre & EQ",
+								"Peavey 240 Standard + 2x15 Sunn Cab",
+								"Roland JC 120B Jazz Chorus",
+								"Silvertone Model 1484 Twin Twelve - Vintage Mid 60s"
 							],
 							"parameter_initial_enable": 1,
 							"parameter_initial": [
@@ -1409,7 +1399,7 @@
 			},
 			{
 				"box": {
-					"id": "nam_model_idx",
+					"id": "Model0",
 					"maxclass": "live.menu",
 					"numinlets": 1,
 					"numoutlets": 2,
@@ -1419,7 +1409,7 @@
 					],
 					"patching_rect": [
 						940,
-						346,
+						380,
 						60,
 						22
 					],
@@ -1427,110 +1417,20 @@
 					"hidden": 1,
 					"saved_attribute_attributes": {
 						"valueof": {
-							"parameter_longname": "Model",
-							"parameter_shortname": "Model",
+							"parameter_longname": "NAM Model 0",
+							"parameter_shortname": "Model0",
 							"parameter_type": 2,
 							"parameter_enum": [
-								"1",
-								"2",
-								"3",
-								"4",
-								"5",
-								"6",
-								"7",
-								"8",
-								"9",
-								"10",
-								"11",
-								"12",
-								"13",
-								"14",
-								"15",
-								"16",
-								"17",
-								"18",
-								"19",
-								"20",
-								"21",
-								"22",
-								"23",
-								"24",
-								"25",
-								"26",
-								"27",
-								"28",
-								"29",
-								"30",
-								"31",
-								"32",
-								"33",
-								"34",
-								"35",
-								"36",
-								"37",
-								"38",
-								"39",
-								"40",
-								"41",
-								"42",
-								"43",
-								"44",
-								"45",
-								"46",
-								"47",
-								"48",
-								"49",
-								"50",
-								"51",
-								"52",
-								"53",
-								"54",
-								"55",
-								"56",
-								"57",
-								"58",
-								"59",
-								"60",
-								"61",
-								"62",
-								"63",
-								"64",
-								"65",
-								"66",
-								"67",
-								"68",
-								"69",
-								"70",
-								"71",
-								"72",
-								"73",
-								"74",
-								"75",
-								"76",
-								"77",
-								"78",
-								"79",
-								"80",
-								"81",
-								"82",
-								"83",
-								"84",
-								"85",
-								"86",
-								"87",
-								"88",
-								"89",
-								"90",
-								"91",
-								"92",
-								"93",
-								"94",
-								"95",
-								"96",
-								"97",
-								"98",
-								"99",
-								"100"
+								"M160 MIDDLE - T 4, I 2, M 5",
+								"M160 MIDDLE - T 5, I 3, M 9",
+								"M160 MIDDLE - T 6, I 11, M 12",
+								"MD 421 CAP_CENTER - T 6, I 11, M 12",
+								"MD 421 EDGE - T 6, I 11, M 12",
+								"MD 421 MIDDLE - T 6, I 11, M 12",
+								"MD 421 OFF AXIS + 45 DEGREES - T 6, I 11, M 12",
+								"SM57 CAP EDGE - T 4, I 2, M 5",
+								"SM57 CAP EDGE - T 5, I 3, M 9",
+								"SM57 CAP EDGE - T 6, I 11, M 12"
 							],
 							"parameter_initial_enable": 1,
 							"parameter_initial": [
@@ -1538,12 +1438,12 @@
 							]
 						}
 					},
-					"varname": "nam_model_idx"
+					"varname": "Model0"
 				}
 			},
 			{
 				"box": {
-					"id": "pre_push_nam_model_idx",
+					"id": "pre_push_Model0",
 					"maxclass": "newobj",
 					"numinlets": 1,
 					"numoutlets": 1,
@@ -1552,17 +1452,59 @@
 					],
 					"patching_rect": [
 						940,
-						374,
-						250,
+						404,
+						270,
 						22
 					],
 					"text": "prepend select_nam_model_by_push",
-					"varname": "pre_push_nam_model_idx"
+					"varname": "pre_push_Model0"
 				}
 			},
 			{
 				"box": {
-					"id": "rcv_set_nam_model_idx",
+					"id": "Model1",
+					"maxclass": "live.menu",
+					"numinlets": 1,
+					"numoutlets": 2,
+					"outlettype": [
+						"int",
+						"bang"
+					],
+					"patching_rect": [
+						940,
+						404,
+						60,
+						22
+					],
+					"parameter_enable": 1,
+					"hidden": 1,
+					"saved_attribute_attributes": {
+						"valueof": {
+							"parameter_longname": "NAM Model 1",
+							"parameter_shortname": "Model1",
+							"parameter_type": 2,
+							"parameter_enum": [
+								"Electro-Voice 635a - Middle, Normal + Treble Boost - Bass 6, Mid 5, Treble 5",
+								"Electro-Voice 635a Middle, Normal - Bass 6, Mid 5, Treble 5",
+								"M160 Middle, Normal + Treble Boost - Bass 6, Mid 5, Treble 5",
+								"M160 Middle, Normal - Bass 6, Mid 5, Treble 5",
+								"MD 421 Middle, Normal  - Bass 6, Mid 5, Treble 5",
+								"MD 421 Middle, Normal + Treble Boost - Bass 6, Mid 5, Treble 5",
+								"SM57 Middle, Normal + Treble Boost - Bass 6, Mid 5, Treble 5",
+								"Shure SM57 Middle, Normal - Bass 6, Mid 5, Treble 5"
+							],
+							"parameter_initial_enable": 1,
+							"parameter_initial": [
+								0
+							]
+						}
+					},
+					"varname": "Model1"
+				}
+			},
+			{
+				"box": {
+					"id": "pre_push_Model1",
 					"maxclass": "newobj",
 					"numinlets": 1,
 					"numoutlets": 1,
@@ -1570,32 +1512,1102 @@
 						""
 					],
 					"patching_rect": [
-						1210,
+						940,
+						428,
+						270,
+						22
+					],
+					"text": "prepend select_nam_model_by_push",
+					"varname": "pre_push_Model1"
+				}
+			},
+			{
+				"box": {
+					"id": "Model2",
+					"maxclass": "live.menu",
+					"numinlets": 1,
+					"numoutlets": 2,
+					"outlettype": [
+						"int",
+						"bang"
+					],
+					"patching_rect": [
+						940,
+						428,
+						60,
+						22
+					],
+					"parameter_enable": 1,
+					"hidden": 1,
+					"saved_attribute_attributes": {
+						"valueof": {
+							"parameter_longname": "NAM Model 2",
+							"parameter_shortname": "Model2",
+							"parameter_type": 2,
+							"parameter_enum": [
+								"left mic gain 3",
+								"left mic gain 5",
+								"left mic gain 8",
+								"right mic gain 3",
+								"right mic gain 5",
+								"right mic gain 8"
+							],
+							"parameter_initial_enable": 1,
+							"parameter_initial": [
+								0
+							]
+						}
+					},
+					"varname": "Model2"
+				}
+			},
+			{
+				"box": {
+					"id": "pre_push_Model2",
+					"maxclass": "newobj",
+					"numinlets": 1,
+					"numoutlets": 1,
+					"outlettype": [
+						""
+					],
+					"patching_rect": [
+						940,
+						452,
+						270,
+						22
+					],
+					"text": "prepend select_nam_model_by_push",
+					"varname": "pre_push_Model2"
+				}
+			},
+			{
+				"box": {
+					"id": "Model3",
+					"maxclass": "live.menu",
+					"numinlets": 1,
+					"numoutlets": 2,
+					"outlettype": [
+						"int",
+						"bang"
+					],
+					"patching_rect": [
+						940,
+						452,
+						60,
+						22
+					],
+					"parameter_enable": 1,
+					"hidden": 1,
+					"saved_attribute_attributes": {
+						"valueof": {
+							"parameter_longname": "NAM Model 3",
+							"parameter_shortname": "Model3",
+							"parameter_type": 2,
+							"parameter_enum": [
+								"22 dB - Chan 1",
+								"22 dB - Chan 2",
+								"30 dB - Chan 1",
+								"30 dB - Chan 2",
+								"38 dB - Chan 1",
+								"38 dB - Chan 2",
+								"46 dB - Chan 1",
+								"46 dB - Chan 2",
+								"54 dB - Chan 1",
+								"54 dB - Chan 2"
+							],
+							"parameter_initial_enable": 1,
+							"parameter_initial": [
+								0
+							]
+						}
+					},
+					"varname": "Model3"
+				}
+			},
+			{
+				"box": {
+					"id": "pre_push_Model3",
+					"maxclass": "newobj",
+					"numinlets": 1,
+					"numoutlets": 1,
+					"outlettype": [
+						""
+					],
+					"patching_rect": [
+						940,
+						476,
+						270,
+						22
+					],
+					"text": "prepend select_nam_model_by_push",
+					"varname": "pre_push_Model3"
+				}
+			},
+			{
+				"box": {
+					"id": "Model4",
+					"maxclass": "live.menu",
+					"numinlets": 1,
+					"numoutlets": 2,
+					"outlettype": [
+						"int",
+						"bang"
+					],
+					"patching_rect": [
+						940,
+						476,
+						60,
+						22
+					],
+					"parameter_enable": 1,
+					"hidden": 1,
+					"saved_attribute_attributes": {
+						"valueof": {
+							"parameter_longname": "NAM Model 4",
+							"parameter_shortname": "Model4",
+							"parameter_type": 2,
+							"parameter_enum": [
+								"Clean",
+								"Drive 1",
+								"Drive 2"
+							],
+							"parameter_initial_enable": 1,
+							"parameter_initial": [
+								0
+							]
+						}
+					},
+					"varname": "Model4"
+				}
+			},
+			{
+				"box": {
+					"id": "pre_push_Model4",
+					"maxclass": "newobj",
+					"numinlets": 1,
+					"numoutlets": 1,
+					"outlettype": [
+						""
+					],
+					"patching_rect": [
+						940,
+						500,
+						270,
+						22
+					],
+					"text": "prepend select_nam_model_by_push",
+					"varname": "pre_push_Model4"
+				}
+			},
+			{
+				"box": {
+					"id": "Model5",
+					"maxclass": "live.menu",
+					"numinlets": 1,
+					"numoutlets": 2,
+					"outlettype": [
+						"int",
+						"bang"
+					],
+					"patching_rect": [
+						940,
+						500,
+						60,
+						22
+					],
+					"parameter_enable": 1,
+					"hidden": 1,
+					"saved_attribute_attributes": {
+						"valueof": {
+							"parameter_longname": "NAM Model 5",
+							"parameter_shortname": "Model5",
+							"parameter_type": 2,
+							"parameter_enum": [
+								"Fender DRRI _ Clean _ Room Only _ Full Rig",
+								"Fender DRRI _ Clean _ SM57 + Royer R-121 (No Room) _ Full Rig",
+								"Fender DRRI _ Clean _ SM57 + Royer R-121 + Room _ Full Rig",
+								"NEW VERSION _ Fender DRRI _ Clean _ Room Only _ Full Rig",
+								"NEW VERSION _ Fender DRRI _ Clean _ SM57 + Royer R-121 (No Room) _ Full Rig",
+								"NEW VERSION _ Fender DRRI _ Clean _ SM57 + Royer R-121 + Room _ Full Rig"
+							],
+							"parameter_initial_enable": 1,
+							"parameter_initial": [
+								0
+							]
+						}
+					},
+					"varname": "Model5"
+				}
+			},
+			{
+				"box": {
+					"id": "pre_push_Model5",
+					"maxclass": "newobj",
+					"numinlets": 1,
+					"numoutlets": 1,
+					"outlettype": [
+						""
+					],
+					"patching_rect": [
+						940,
+						524,
+						270,
+						22
+					],
+					"text": "prepend select_nam_model_by_push",
+					"varname": "pre_push_Model5"
+				}
+			},
+			{
+				"box": {
+					"id": "Model6",
+					"maxclass": "live.menu",
+					"numinlets": 1,
+					"numoutlets": 2,
+					"outlettype": [
+						"int",
+						"bang"
+					],
+					"patching_rect": [
+						940,
+						524,
+						60,
+						22
+					],
+					"parameter_enable": 1,
+					"hidden": 1,
+					"saved_attribute_attributes": {
+						"valueof": {
+							"parameter_longname": "NAM Model 6",
+							"parameter_shortname": "Model6",
+							"parameter_type": 2,
+							"parameter_enum": [
+								"DRII_v3_t1_b3_p5_PR30",
+								"DRII_v3_t1_b3_p5_SM57",
+								"DRII_v3_t3_b3_p5_PR-30",
+								"DRII_v3_t3_b3_p5_SM57",
+								"DRII_v3pB_t3_b3_p5_PR30",
+								"DRII_v3pb_t3_b3_p5_SM57",
+								"DRIIcrnch_v5_g5_Mv3_t4_m7p_b3_p5_PR30",
+								"DRIIcrnch_v5_g5_Mv3_t4_m7p_b3_p7_SM57",
+								"DRIIcrnch_v5_g7_Mv3_t4_m7_b3_p5_PR30",
+								"DRIIcruch_v5_g7_Mv3_t4_m7_b3_p5_SM57",
+								"DRIIoverdSM57_v4_g5_Mv3_t4_m5p_b3_p5",
+								"Deluxe Reverb II_two overdrives into clean channel with SM57"
+							],
+							"parameter_initial_enable": 1,
+							"parameter_initial": [
+								0
+							]
+						}
+					},
+					"varname": "Model6"
+				}
+			},
+			{
+				"box": {
+					"id": "pre_push_Model6",
+					"maxclass": "newobj",
+					"numinlets": 1,
+					"numoutlets": 1,
+					"outlettype": [
+						""
+					],
+					"patching_rect": [
+						940,
+						548,
+						270,
+						22
+					],
+					"text": "prepend select_nam_model_by_push",
+					"varname": "pre_push_Model6"
+				}
+			},
+			{
+				"box": {
+					"id": "Model7",
+					"maxclass": "live.menu",
+					"numinlets": 1,
+					"numoutlets": 2,
+					"outlettype": [
+						"int",
+						"bang"
+					],
+					"patching_rect": [
+						940,
+						548,
+						60,
+						22
+					],
+					"parameter_enable": 1,
+					"hidden": 1,
+					"saved_attribute_attributes": {
+						"valueof": {
+							"parameter_longname": "NAM Model 7",
+							"parameter_shortname": "Model7",
+							"parameter_type": 2,
+							"parameter_enum": [
+								"AKG 414",
+								"sm57 and AKG 414",
+								"sm57"
+							],
+							"parameter_initial_enable": 1,
+							"parameter_initial": [
+								0
+							]
+						}
+					},
+					"varname": "Model7"
+				}
+			},
+			{
+				"box": {
+					"id": "pre_push_Model7",
+					"maxclass": "newobj",
+					"numinlets": 1,
+					"numoutlets": 1,
+					"outlettype": [
+						""
+					],
+					"patching_rect": [
+						940,
+						572,
+						270,
+						22
+					],
+					"text": "prepend select_nam_model_by_push",
+					"varname": "pre_push_Model7"
+				}
+			},
+			{
+				"box": {
+					"id": "Model8",
+					"maxclass": "live.menu",
+					"numinlets": 1,
+					"numoutlets": 2,
+					"outlettype": [
+						"int",
+						"bang"
+					],
+					"patching_rect": [
+						940,
+						572,
+						60,
+						22
+					],
+					"parameter_enable": 1,
+					"hidden": 1,
+					"saved_attribute_attributes": {
+						"valueof": {
+							"parameter_longname": "NAM Model 8",
+							"parameter_shortname": "Model8",
+							"parameter_type": 2,
+							"parameter_enum": [
+								"Clean Boost",
+								"Gain 10 - Treble Boost",
+								"Gain 10",
+								"Gain 2.5",
+								"Gain 5",
+								"Gain 7.5 - Treble Boost",
+								"Gain 7.5"
+							],
+							"parameter_initial_enable": 1,
+							"parameter_initial": [
+								0
+							]
+						}
+					},
+					"varname": "Model8"
+				}
+			},
+			{
+				"box": {
+					"id": "pre_push_Model8",
+					"maxclass": "newobj",
+					"numinlets": 1,
+					"numoutlets": 1,
+					"outlettype": [
+						""
+					],
+					"patching_rect": [
+						940,
+						596,
+						270,
+						22
+					],
+					"text": "prepend select_nam_model_by_push",
+					"varname": "pre_push_Model8"
+				}
+			},
+			{
+				"box": {
+					"id": "Model9",
+					"maxclass": "live.menu",
+					"numinlets": 1,
+					"numoutlets": 2,
+					"outlettype": [
+						"int",
+						"bang"
+					],
+					"patching_rect": [
+						940,
+						596,
+						60,
+						22
+					],
+					"parameter_enable": 1,
+					"hidden": 1,
+					"saved_attribute_attributes": {
+						"valueof": {
+							"parameter_longname": "NAM Model 9",
+							"parameter_shortname": "Model9",
+							"parameter_type": 2,
+							"parameter_enum": [
+								"1964 VOX AC50 Mk. I (Potentially ex-beatles)",
+								"Acoustic Sim",
+								"Neve + 1176 + 1176",
+								"Sovtek Green Russian Big Muff Clone",
+								"Sunn Lucky Number 7 Capture"
+							],
+							"parameter_initial_enable": 1,
+							"parameter_initial": [
+								0
+							]
+						}
+					},
+					"varname": "Model9"
+				}
+			},
+			{
+				"box": {
+					"id": "pre_push_Model9",
+					"maxclass": "newobj",
+					"numinlets": 1,
+					"numoutlets": 1,
+					"outlettype": [
+						""
+					],
+					"patching_rect": [
+						940,
+						620,
+						270,
+						22
+					],
+					"text": "prepend select_nam_model_by_push",
+					"varname": "pre_push_Model9"
+				}
+			},
+			{
+				"box": {
+					"id": "Model10",
+					"maxclass": "live.menu",
+					"numinlets": 1,
+					"numoutlets": 2,
+					"outlettype": [
+						"int",
+						"bang"
+					],
+					"patching_rect": [
+						940,
+						620,
+						60,
+						22
+					],
+					"parameter_enable": 1,
+					"hidden": 1,
+					"saved_attribute_attributes": {
+						"valueof": {
+							"parameter_longname": "NAM Model 10",
+							"parameter_shortname": "Model10",
+							"parameter_type": 2,
+							"parameter_enum": [
+								"30 - L",
+								"30 - R",
+								"40 - L",
+								"40 - R",
+								"50 - L",
+								"50 - R",
+								"60 - L",
+								"60 - R",
+								"70 - L",
+								"70 - R"
+							],
+							"parameter_initial_enable": 1,
+							"parameter_initial": [
+								0
+							]
+						}
+					},
+					"varname": "Model10"
+				}
+			},
+			{
+				"box": {
+					"id": "pre_push_Model10",
+					"maxclass": "newobj",
+					"numinlets": 1,
+					"numoutlets": 1,
+					"outlettype": [
+						""
+					],
+					"patching_rect": [
+						940,
+						644,
+						270,
+						22
+					],
+					"text": "prepend select_nam_model_by_push",
+					"varname": "pre_push_Model10"
+				}
+			},
+			{
+				"box": {
+					"id": "Model11",
+					"maxclass": "live.menu",
+					"numinlets": 1,
+					"numoutlets": 2,
+					"outlettype": [
+						"int",
+						"bang"
+					],
+					"patching_rect": [
+						940,
+						644,
+						60,
+						22
+					],
+					"parameter_enable": 1,
+					"hidden": 1,
+					"saved_attribute_attributes": {
+						"valueof": {
+							"parameter_longname": "NAM Model 11",
+							"parameter_shortname": "Model11",
+							"parameter_type": 2,
+							"parameter_enum": [
+								"M160 - MIDDLE - BRIGHT_HI",
+								"M160 - MIDDLE - JUMPED",
+								"MD 421 - CAP EDGE - BRIGHT_HI",
+								"MD 421 - CAP EDGE - JUMPED",
+								"MD 421 - CENTER - JUMPED",
+								"MD 421 - EDGE - JUMPED",
+								"MD 421 - MIDDLE - JUMPED",
+								"MD 421 - OFF AXIS + 45 DEGREES - JUMPED",
+								"SM57 - CAP EDGE - BRIGHT_HI",
+								"SM57 - CAP EDGE - JUMPED"
+							],
+							"parameter_initial_enable": 1,
+							"parameter_initial": [
+								0
+							]
+						}
+					},
+					"varname": "Model11"
+				}
+			},
+			{
+				"box": {
+					"id": "pre_push_Model11",
+					"maxclass": "newobj",
+					"numinlets": 1,
+					"numoutlets": 1,
+					"outlettype": [
+						""
+					],
+					"patching_rect": [
+						940,
+						668,
+						270,
+						22
+					],
+					"text": "prepend select_nam_model_by_push",
+					"varname": "pre_push_Model11"
+				}
+			},
+			{
+				"box": {
+					"id": "Model12",
+					"maxclass": "live.menu",
+					"numinlets": 1,
+					"numoutlets": 2,
+					"outlettype": [
+						"int",
+						"bang"
+					],
+					"patching_rect": [
+						940,
+						668,
+						60,
+						22
+					],
+					"parameter_enable": 1,
+					"hidden": 1,
+					"saved_attribute_attributes": {
+						"valueof": {
+							"parameter_longname": "NAM Model 12",
+							"parameter_shortname": "Model12",
+							"parameter_type": 2,
+							"parameter_enum": [
+								"Off - SM57 & Royer 101",
+								"Off, Royer 101",
+								"Off, SM57",
+								"On, Royer R-101 & SM57",
+								"On, Royer R-101",
+								"On, SM57"
+							],
+							"parameter_initial_enable": 1,
+							"parameter_initial": [
+								0
+							]
+						}
+					},
+					"varname": "Model12"
+				}
+			},
+			{
+				"box": {
+					"id": "pre_push_Model12",
+					"maxclass": "newobj",
+					"numinlets": 1,
+					"numoutlets": 1,
+					"outlettype": [
+						""
+					],
+					"patching_rect": [
+						940,
+						692,
+						270,
+						22
+					],
+					"text": "prepend select_nam_model_by_push",
+					"varname": "pre_push_Model12"
+				}
+			},
+			{
+				"box": {
+					"id": "Model13",
+					"maxclass": "live.menu",
+					"numinlets": 1,
+					"numoutlets": 2,
+					"outlettype": [
+						"int",
+						"bang"
+					],
+					"patching_rect": [
+						940,
+						692,
+						60,
+						22
+					],
+					"parameter_enable": 1,
+					"hidden": 1,
+					"saved_attribute_attributes": {
+						"valueof": {
+							"parameter_longname": "NAM Model 13",
+							"parameter_shortname": "Model13",
+							"parameter_type": 2,
+							"parameter_enum": [
+								"V10 - Mic Sum",
+								"V10 - R121",
+								"V10 - SM57",
+								"V4 - Mic Sum",
+								"V4 - R121",
+								"V4 - SM57",
+								"V6 - Mic Sum",
+								"V6 - R121",
+								"V6 - SM57"
+							],
+							"parameter_initial_enable": 1,
+							"parameter_initial": [
+								0
+							]
+						}
+					},
+					"varname": "Model13"
+				}
+			},
+			{
+				"box": {
+					"id": "pre_push_Model13",
+					"maxclass": "newobj",
+					"numinlets": 1,
+					"numoutlets": 1,
+					"outlettype": [
+						""
+					],
+					"patching_rect": [
+						940,
+						716,
+						270,
+						22
+					],
+					"text": "prepend select_nam_model_by_push",
+					"varname": "pre_push_Model13"
+				}
+			},
+			{
+				"box": {
+					"id": "IRFile0",
+					"maxclass": "live.menu",
+					"numinlets": 1,
+					"numoutlets": 2,
+					"outlettype": [
+						"int",
+						"bang"
+					],
+					"patching_rect": [
+						940,
+						756,
+						60,
+						22
+					],
+					"parameter_enable": 1,
+					"hidden": 1,
+					"saved_attribute_attributes": {
+						"valueof": {
+							"parameter_longname": "IR File 0",
+							"parameter_shortname": "IRFile0",
+							"parameter_type": 2,
+							"parameter_enum": [
+								"C414 - Distant 12In",
+								"C414 - Distant 24In",
+								"C414 - Rear 0In",
+								"C414 - Rear 12In",
+								"C414 - Rear 24In",
+								"C414 1 - Cap Edge",
+								"C414 1 - Cap",
+								"C414 1 - Cone Edge",
+								"C414 1 - Cone",
+								"C414 2 - Cap Edge",
+								"C414 2 - Cap",
+								"C414 2 - Cone Edge",
+								"C414 2 - Cone",
+								"MD421 1 - Cap Edge",
+								"MD421 1 - Cap",
+								"MD421 1 - Cone Edge",
+								"MD421 1 - Cone",
+								"MD421 2 - Cap Edge",
+								"MD421 2 - Cap",
+								"MD421 2 - Cone Edge",
+								"MD421 2 - Cone",
+								"R121 1 - Cap Edge",
+								"R121 1 - Cap",
+								"R121 1 - Cone Edge",
+								"R121 1 - Cone",
+								"R121 2 - Cap Edge",
+								"R121 2 - Cap",
+								"R121 2 - Cone Edge",
+								"R121 2 - Cone",
+								"SM57 1 - Cap Edge",
+								"SM57 1 - Cap",
+								"SM57 1 - Cone Edge",
+								"SM57 1 - Cone",
+								"SM57 2 - Cap Edge",
+								"SM57 2 - Cap",
+								"SM57 2 - Cone Edge",
+								"SM57 2 - Cone",
+								"i5 1 - Cap Edge",
+								"i5 1 - Cap",
+								"i5 1 - Cone Edge",
+								"i5 1 - Cone",
+								"i5 2 - Cap Edge",
+								"i5 2 - Cap",
+								"i5 2 - Cone Edge",
+								"i5 2 - Cone"
+							],
+							"parameter_initial_enable": 1,
+							"parameter_initial": [
+								0
+							]
+						}
+					},
+					"varname": "IRFile0"
+				}
+			},
+			{
+				"box": {
+					"id": "pre_push_IRFile0",
+					"maxclass": "newobj",
+					"numinlets": 1,
+					"numoutlets": 1,
+					"outlettype": [
+						""
+					],
+					"patching_rect": [
+						940,
+						780,
+						260,
+						22
+					],
+					"text": "prepend select_ir_file_by_push",
+					"varname": "pre_push_IRFile0"
+				}
+			},
+			{
+				"box": {
+					"id": "IRFile1",
+					"maxclass": "live.menu",
+					"numinlets": 1,
+					"numoutlets": 2,
+					"outlettype": [
+						"int",
+						"bang"
+					],
+					"patching_rect": [
+						940,
+						780,
+						60,
+						22
+					],
+					"parameter_enable": 1,
+					"hidden": 1,
+					"saved_attribute_attributes": {
+						"valueof": {
+							"parameter_longname": "IR File 1",
+							"parameter_shortname": "IRFile1",
+							"parameter_type": 2,
+							"parameter_enum": [
+								"4033 A107",
+								"4033 AH",
+								"57 A107",
+								"57 AH",
+								"D6 A107",
+								"D6 AH",
+								"e602 A107",
+								"e602 AH"
+							],
+							"parameter_initial_enable": 1,
+							"parameter_initial": [
+								0
+							]
+						}
+					},
+					"varname": "IRFile1"
+				}
+			},
+			{
+				"box": {
+					"id": "pre_push_IRFile1",
+					"maxclass": "newobj",
+					"numinlets": 1,
+					"numoutlets": 1,
+					"outlettype": [
+						""
+					],
+					"patching_rect": [
+						940,
+						804,
+						260,
+						22
+					],
+					"text": "prepend select_ir_file_by_push",
+					"varname": "pre_push_IRFile1"
+				}
+			},
+			{
+				"box": {
+					"id": "IRFile2",
+					"maxclass": "live.menu",
+					"numinlets": 1,
+					"numoutlets": 2,
+					"outlettype": [
+						"int",
+						"bang"
+					],
+					"patching_rect": [
+						940,
+						804,
+						60,
+						22
+					],
+					"parameter_enable": 1,
+					"hidden": 1,
+					"saved_attribute_attributes": {
+						"valueof": {
+							"parameter_longname": "IR File 2",
+							"parameter_shortname": "IRFile2",
+							"parameter_type": 2,
+							"parameter_enum": [
+								"cc8",
+								"m160+sm57_dc",
+								"m160",
+								"mc834",
+								"md421",
+								"oc818",
+								"sm57"
+							],
+							"parameter_initial_enable": 1,
+							"parameter_initial": [
+								0
+							]
+						}
+					},
+					"varname": "IRFile2"
+				}
+			},
+			{
+				"box": {
+					"id": "pre_push_IRFile2",
+					"maxclass": "newobj",
+					"numinlets": 1,
+					"numoutlets": 1,
+					"outlettype": [
+						""
+					],
+					"patching_rect": [
+						940,
+						828,
+						260,
+						22
+					],
+					"text": "prepend select_ir_file_by_push",
+					"varname": "pre_push_IRFile2"
+				}
+			},
+			{
+				"box": {
+					"id": "IRFile3",
+					"maxclass": "live.menu",
+					"numinlets": 1,
+					"numoutlets": 2,
+					"outlettype": [
+						"int",
+						"bang"
+					],
+					"patching_rect": [
+						940,
+						828,
+						60,
+						22
+					],
+					"parameter_enable": 1,
+					"hidden": 1,
+					"saved_attribute_attributes": {
+						"valueof": {
+							"parameter_longname": "IR File 3",
+							"parameter_shortname": "IRFile3",
+							"parameter_type": 2,
+							"parameter_enum": [
+								"BIG - 48 24",
+								"BIG",
+								"LEAN - 48 24",
+								"LEAN"
+							],
+							"parameter_initial_enable": 1,
+							"parameter_initial": [
+								0
+							]
+						}
+					},
+					"varname": "IRFile3"
+				}
+			},
+			{
+				"box": {
+					"id": "pre_push_IRFile3",
+					"maxclass": "newobj",
+					"numinlets": 1,
+					"numoutlets": 1,
+					"outlettype": [
+						""
+					],
+					"patching_rect": [
+						940,
+						852,
+						260,
+						22
+					],
+					"text": "prepend select_ir_file_by_push",
+					"varname": "pre_push_IRFile3"
+				}
+			},
+			{
+				"box": {
+					"id": "IRFile4",
+					"maxclass": "live.menu",
+					"numinlets": 1,
+					"numoutlets": 2,
+					"outlettype": [
+						"int",
+						"bang"
+					],
+					"patching_rect": [
+						940,
+						852,
+						60,
+						22
+					],
+					"parameter_enable": 1,
+					"hidden": 1,
+					"saved_attribute_attributes": {
+						"valueof": {
+							"parameter_longname": "IR File 4",
+							"parameter_shortname": "IRFile4",
+							"parameter_type": 2,
+							"parameter_enum": [
+								"Mesa_OS_4x12_57_m160"
+							],
+							"parameter_initial_enable": 1,
+							"parameter_initial": [
+								0
+							]
+						}
+					},
+					"varname": "IRFile4"
+				}
+			},
+			{
+				"box": {
+					"id": "pre_push_IRFile4",
+					"maxclass": "newobj",
+					"numinlets": 1,
+					"numoutlets": 1,
+					"outlettype": [
+						""
+					],
+					"patching_rect": [
+						940,
+						876,
+						260,
+						22
+					],
+					"text": "prepend select_ir_file_by_push",
+					"varname": "pre_push_IRFile4"
+				}
+			},
+			{
+				"box": {
+					"id": "live_banks",
+					"maxclass": "newobj",
+					"numinlets": 1,
+					"numoutlets": 1,
+					"outlettype": [
+						""
+					],
+					"patching_rect": [
+						1450,
+						320,
+						100,
+						22
+					],
+					"text": "live.banks",
+					"varname": "live_banks"
+				}
+			},
+			{
+				"box": {
+					"id": "print_banks",
+					"maxclass": "newobj",
+					"numinlets": 1,
+					"numoutlets": 0,
+					"outlettype": [],
+					"patching_rect": [
+						1450,
 						346,
-						210,
+						100,
 						22
 					],
-					"text": "receive nam_numbox_set_model",
-					"varname": "rcv_set_nam_model_idx"
-				}
-			},
-			{
-				"box": {
-					"id": "pre_set_nam_model_idx",
-					"maxclass": "newobj",
-					"numinlets": 1,
-					"numoutlets": 1,
-					"outlettype": [
-						""
-					],
-					"patching_rect": [
-						1210,
-						374,
-						80,
-						22
-					],
-					"text": "prepend set",
-					"varname": "pre_set_nam_model_idx"
+					"text": "print banks",
+					"varname": "print_banks"
 				}
 			},
 			{
@@ -3547,106 +4559,11 @@
 							"parameter_shortname": "IRCat",
 							"parameter_type": 2,
 							"parameter_enum": [
-								"1",
-								"2",
-								"3",
-								"4",
-								"5",
-								"6",
-								"7",
-								"8",
-								"9",
-								"10",
-								"11",
-								"12",
-								"13",
-								"14",
-								"15",
-								"16",
-								"17",
-								"18",
-								"19",
-								"20",
-								"21",
-								"22",
-								"23",
-								"24",
-								"25",
-								"26",
-								"27",
-								"28",
-								"29",
-								"30",
-								"31",
-								"32",
-								"33",
-								"34",
-								"35",
-								"36",
-								"37",
-								"38",
-								"39",
-								"40",
-								"41",
-								"42",
-								"43",
-								"44",
-								"45",
-								"46",
-								"47",
-								"48",
-								"49",
-								"50",
-								"51",
-								"52",
-								"53",
-								"54",
-								"55",
-								"56",
-								"57",
-								"58",
-								"59",
-								"60",
-								"61",
-								"62",
-								"63",
-								"64",
-								"65",
-								"66",
-								"67",
-								"68",
-								"69",
-								"70",
-								"71",
-								"72",
-								"73",
-								"74",
-								"75",
-								"76",
-								"77",
-								"78",
-								"79",
-								"80",
-								"81",
-								"82",
-								"83",
-								"84",
-								"85",
-								"86",
-								"87",
-								"88",
-								"89",
-								"90",
-								"91",
-								"92",
-								"93",
-								"94",
-								"95",
-								"96",
-								"97",
-								"98",
-								"99",
-								"100"
+								"1971 Fender Twin Reverb Cabinet with Oxford 12T6-10 IR Collection",
+								"Bass Ampeg SVT  8x10",
+								"Celestion V30",
+								"Fender Deluxe Reverb Mix Ready",
+								"Loose files"
 							],
 							"parameter_initial_enable": 1,
 							"parameter_initial": [
@@ -3712,197 +4629,6 @@
 					],
 					"text": "prepend set",
 					"varname": "pre_set_ir_cat_idx"
-				}
-			},
-			{
-				"box": {
-					"id": "ir_file_idx",
-					"maxclass": "live.menu",
-					"numinlets": 1,
-					"numoutlets": 2,
-					"outlettype": [
-						"int",
-						"bang"
-					],
-					"patching_rect": [
-						940,
-						578,
-						60,
-						22
-					],
-					"parameter_enable": 1,
-					"hidden": 1,
-					"saved_attribute_attributes": {
-						"valueof": {
-							"parameter_longname": "IR File",
-							"parameter_shortname": "IRFile",
-							"parameter_type": 2,
-							"parameter_enum": [
-								"1",
-								"2",
-								"3",
-								"4",
-								"5",
-								"6",
-								"7",
-								"8",
-								"9",
-								"10",
-								"11",
-								"12",
-								"13",
-								"14",
-								"15",
-								"16",
-								"17",
-								"18",
-								"19",
-								"20",
-								"21",
-								"22",
-								"23",
-								"24",
-								"25",
-								"26",
-								"27",
-								"28",
-								"29",
-								"30",
-								"31",
-								"32",
-								"33",
-								"34",
-								"35",
-								"36",
-								"37",
-								"38",
-								"39",
-								"40",
-								"41",
-								"42",
-								"43",
-								"44",
-								"45",
-								"46",
-								"47",
-								"48",
-								"49",
-								"50",
-								"51",
-								"52",
-								"53",
-								"54",
-								"55",
-								"56",
-								"57",
-								"58",
-								"59",
-								"60",
-								"61",
-								"62",
-								"63",
-								"64",
-								"65",
-								"66",
-								"67",
-								"68",
-								"69",
-								"70",
-								"71",
-								"72",
-								"73",
-								"74",
-								"75",
-								"76",
-								"77",
-								"78",
-								"79",
-								"80",
-								"81",
-								"82",
-								"83",
-								"84",
-								"85",
-								"86",
-								"87",
-								"88",
-								"89",
-								"90",
-								"91",
-								"92",
-								"93",
-								"94",
-								"95",
-								"96",
-								"97",
-								"98",
-								"99",
-								"100"
-							],
-							"parameter_initial_enable": 1,
-							"parameter_initial": [
-								0
-							]
-						}
-					},
-					"varname": "ir_file_idx"
-				}
-			},
-			{
-				"box": {
-					"id": "pre_push_ir_file_idx",
-					"maxclass": "newobj",
-					"numinlets": 1,
-					"numoutlets": 1,
-					"outlettype": [
-						""
-					],
-					"patching_rect": [
-						940,
-						606,
-						240,
-						22
-					],
-					"text": "prepend select_ir_file_by_push",
-					"varname": "pre_push_ir_file_idx"
-				}
-			},
-			{
-				"box": {
-					"id": "rcv_set_ir_file_idx",
-					"maxclass": "newobj",
-					"numinlets": 1,
-					"numoutlets": 1,
-					"outlettype": [
-						""
-					],
-					"patching_rect": [
-						1210,
-						578,
-						210,
-						22
-					],
-					"text": "receive ir_numbox_set_file",
-					"varname": "rcv_set_ir_file_idx"
-				}
-			},
-			{
-				"box": {
-					"id": "pre_set_ir_file_idx",
-					"maxclass": "newobj",
-					"numinlets": 1,
-					"numoutlets": 1,
-					"outlettype": [
-						""
-					],
-					"patching_rect": [
-						1210,
-						606,
-						80,
-						22
-					],
-					"text": "prepend set",
-					"varname": "pre_set_ir_file_idx"
 				}
 			},
 			{
@@ -4116,6 +4842,78 @@
 					],
 					"destination": [
 						"nodestate",
+						0
+					]
+				}
+			},
+			{
+				"patchline": {
+					"source": [
+						"thisdev",
+						0
+					],
+					"destination": [
+						"delay_init_banks",
+						0
+					]
+				}
+			},
+			{
+				"patchline": {
+					"source": [
+						"delay_init_banks",
+						0
+					],
+					"destination": [
+						"msg_init_banks",
+						0
+					]
+				}
+			},
+			{
+				"patchline": {
+					"source": [
+						"msg_init_banks",
+						0
+					],
+					"destination": [
+						"jsloader",
+						0
+					]
+				}
+			},
+			{
+				"patchline": {
+					"source": [
+						"thisdev",
+						0
+					],
+					"destination": [
+						"delay_ir_bank",
+						0
+					]
+				}
+			},
+			{
+				"patchline": {
+					"source": [
+						"delay_ir_bank",
+						0
+					],
+					"destination": [
+						"msg_ir_bank",
+						0
+					]
+				}
+			},
+			{
+				"patchline": {
+					"source": [
+						"msg_ir_bank",
+						0
+					],
+					"destination": [
+						"jsloader",
 						0
 					]
 				}
@@ -4663,11 +5461,11 @@
 			{
 				"patchline": {
 					"source": [
-						"nam_model_idx",
+						"Model0",
 						0
 					],
 					"destination": [
-						"pre_push_nam_model_idx",
+						"pre_push_Model0",
 						0
 					]
 				}
@@ -4675,7 +5473,7 @@
 			{
 				"patchline": {
 					"source": [
-						"pre_push_nam_model_idx",
+						"pre_push_Model0",
 						0
 					],
 					"destination": [
@@ -4687,11 +5485,11 @@
 			{
 				"patchline": {
 					"source": [
-						"rcv_set_nam_model_idx",
+						"Model1",
 						0
 					],
 					"destination": [
-						"pre_set_nam_model_idx",
+						"pre_push_Model1",
 						0
 					]
 				}
@@ -4699,11 +5497,431 @@
 			{
 				"patchline": {
 					"source": [
-						"pre_set_nam_model_idx",
+						"pre_push_Model1",
 						0
 					],
 					"destination": [
-						"nam_model_idx",
+						"jsloader",
+						0
+					]
+				}
+			},
+			{
+				"patchline": {
+					"source": [
+						"Model2",
+						0
+					],
+					"destination": [
+						"pre_push_Model2",
+						0
+					]
+				}
+			},
+			{
+				"patchline": {
+					"source": [
+						"pre_push_Model2",
+						0
+					],
+					"destination": [
+						"jsloader",
+						0
+					]
+				}
+			},
+			{
+				"patchline": {
+					"source": [
+						"Model3",
+						0
+					],
+					"destination": [
+						"pre_push_Model3",
+						0
+					]
+				}
+			},
+			{
+				"patchline": {
+					"source": [
+						"pre_push_Model3",
+						0
+					],
+					"destination": [
+						"jsloader",
+						0
+					]
+				}
+			},
+			{
+				"patchline": {
+					"source": [
+						"Model4",
+						0
+					],
+					"destination": [
+						"pre_push_Model4",
+						0
+					]
+				}
+			},
+			{
+				"patchline": {
+					"source": [
+						"pre_push_Model4",
+						0
+					],
+					"destination": [
+						"jsloader",
+						0
+					]
+				}
+			},
+			{
+				"patchline": {
+					"source": [
+						"Model5",
+						0
+					],
+					"destination": [
+						"pre_push_Model5",
+						0
+					]
+				}
+			},
+			{
+				"patchline": {
+					"source": [
+						"pre_push_Model5",
+						0
+					],
+					"destination": [
+						"jsloader",
+						0
+					]
+				}
+			},
+			{
+				"patchline": {
+					"source": [
+						"Model6",
+						0
+					],
+					"destination": [
+						"pre_push_Model6",
+						0
+					]
+				}
+			},
+			{
+				"patchline": {
+					"source": [
+						"pre_push_Model6",
+						0
+					],
+					"destination": [
+						"jsloader",
+						0
+					]
+				}
+			},
+			{
+				"patchline": {
+					"source": [
+						"Model7",
+						0
+					],
+					"destination": [
+						"pre_push_Model7",
+						0
+					]
+				}
+			},
+			{
+				"patchline": {
+					"source": [
+						"pre_push_Model7",
+						0
+					],
+					"destination": [
+						"jsloader",
+						0
+					]
+				}
+			},
+			{
+				"patchline": {
+					"source": [
+						"Model8",
+						0
+					],
+					"destination": [
+						"pre_push_Model8",
+						0
+					]
+				}
+			},
+			{
+				"patchline": {
+					"source": [
+						"pre_push_Model8",
+						0
+					],
+					"destination": [
+						"jsloader",
+						0
+					]
+				}
+			},
+			{
+				"patchline": {
+					"source": [
+						"Model9",
+						0
+					],
+					"destination": [
+						"pre_push_Model9",
+						0
+					]
+				}
+			},
+			{
+				"patchline": {
+					"source": [
+						"pre_push_Model9",
+						0
+					],
+					"destination": [
+						"jsloader",
+						0
+					]
+				}
+			},
+			{
+				"patchline": {
+					"source": [
+						"Model10",
+						0
+					],
+					"destination": [
+						"pre_push_Model10",
+						0
+					]
+				}
+			},
+			{
+				"patchline": {
+					"source": [
+						"pre_push_Model10",
+						0
+					],
+					"destination": [
+						"jsloader",
+						0
+					]
+				}
+			},
+			{
+				"patchline": {
+					"source": [
+						"Model11",
+						0
+					],
+					"destination": [
+						"pre_push_Model11",
+						0
+					]
+				}
+			},
+			{
+				"patchline": {
+					"source": [
+						"pre_push_Model11",
+						0
+					],
+					"destination": [
+						"jsloader",
+						0
+					]
+				}
+			},
+			{
+				"patchline": {
+					"source": [
+						"Model12",
+						0
+					],
+					"destination": [
+						"pre_push_Model12",
+						0
+					]
+				}
+			},
+			{
+				"patchline": {
+					"source": [
+						"pre_push_Model12",
+						0
+					],
+					"destination": [
+						"jsloader",
+						0
+					]
+				}
+			},
+			{
+				"patchline": {
+					"source": [
+						"Model13",
+						0
+					],
+					"destination": [
+						"pre_push_Model13",
+						0
+					]
+				}
+			},
+			{
+				"patchline": {
+					"source": [
+						"pre_push_Model13",
+						0
+					],
+					"destination": [
+						"jsloader",
+						0
+					]
+				}
+			},
+			{
+				"patchline": {
+					"source": [
+						"IRFile0",
+						0
+					],
+					"destination": [
+						"pre_push_IRFile0",
+						0
+					]
+				}
+			},
+			{
+				"patchline": {
+					"source": [
+						"pre_push_IRFile0",
+						0
+					],
+					"destination": [
+						"jsloader",
+						0
+					]
+				}
+			},
+			{
+				"patchline": {
+					"source": [
+						"IRFile1",
+						0
+					],
+					"destination": [
+						"pre_push_IRFile1",
+						0
+					]
+				}
+			},
+			{
+				"patchline": {
+					"source": [
+						"pre_push_IRFile1",
+						0
+					],
+					"destination": [
+						"jsloader",
+						0
+					]
+				}
+			},
+			{
+				"patchline": {
+					"source": [
+						"IRFile2",
+						0
+					],
+					"destination": [
+						"pre_push_IRFile2",
+						0
+					]
+				}
+			},
+			{
+				"patchline": {
+					"source": [
+						"pre_push_IRFile2",
+						0
+					],
+					"destination": [
+						"jsloader",
+						0
+					]
+				}
+			},
+			{
+				"patchline": {
+					"source": [
+						"IRFile3",
+						0
+					],
+					"destination": [
+						"pre_push_IRFile3",
+						0
+					]
+				}
+			},
+			{
+				"patchline": {
+					"source": [
+						"pre_push_IRFile3",
+						0
+					],
+					"destination": [
+						"jsloader",
+						0
+					]
+				}
+			},
+			{
+				"patchline": {
+					"source": [
+						"IRFile4",
+						0
+					],
+					"destination": [
+						"pre_push_IRFile4",
+						0
+					]
+				}
+			},
+			{
+				"patchline": {
+					"source": [
+						"pre_push_IRFile4",
+						0
+					],
+					"destination": [
+						"jsloader",
+						0
+					]
+				}
+			},
+			{
+				"patchline": {
+					"source": [
+						"live_banks",
+						0
+					],
+					"destination": [
+						"print_banks",
 						0
 					]
 				}
@@ -5880,54 +7098,6 @@
 					],
 					"destination": [
 						"ir_cat_idx",
-						0
-					]
-				}
-			},
-			{
-				"patchline": {
-					"source": [
-						"ir_file_idx",
-						0
-					],
-					"destination": [
-						"pre_push_ir_file_idx",
-						0
-					]
-				}
-			},
-			{
-				"patchline": {
-					"source": [
-						"pre_push_ir_file_idx",
-						0
-					],
-					"destination": [
-						"jsloader",
-						0
-					]
-				}
-			},
-			{
-				"patchline": {
-					"source": [
-						"rcv_set_ir_file_idx",
-						0
-					],
-					"destination": [
-						"pre_set_ir_file_idx",
-						0
-					]
-				}
-			},
-			{
-				"patchline": {
-					"source": [
-						"pre_set_ir_file_idx",
-						0
-					],
-					"destination": [
-						"ir_file_idx",
 						0
 					]
 				}

@@ -14,8 +14,8 @@
 //   get_all                            -> outlet 0 rehydrate <json>
 
 const maxApi = require("max-api");
-const fs = require("fs");
-const path = require("path");
+const fs     = require("fs");
+const path   = require("path");
 
 const STATE_FILE = path.join(__dirname, "state.json");
 
@@ -25,6 +25,12 @@ let state = {
     nam_relpath: "",
     ir_relpath: "",
 };
+
+// Snapshot of on-disk state captured before pattr fires at startup.
+// pattr triggers set_nam_root → select_nam_model → overwrites state.json
+// with "root/..." before get_all fires (1s delay). rehydrate must see the
+// original saved selection, not the pattr-reset one.
+let startupState = null;
 
 function load() {
     try {
@@ -83,8 +89,10 @@ maxApi.addHandler("set_ir_relpath", (...args) => {
 });
 
 maxApi.addHandler("get_all", () => {
-    emitRehydrate();
+    maxApi.outlet(JSON.stringify(startupState || state));
 });
 
+
 load();
+startupState = { ...state };
 maxApi.post("nam_state.js loaded");

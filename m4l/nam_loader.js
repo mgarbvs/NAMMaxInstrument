@@ -47,38 +47,70 @@ var _patcher = null;
 var _lapi_obs   = {};  // varname → LiveAPI observer
 var _lapi_guard = {};  // varname → bool (re-entrancy guard)
 
-function _pobs_nam_cat(args)   { _pobs_clamp("nam_cat_idx",   args); }
-function _pobs_nam_model(args) { _pobs_clamp("nam_model_idx", args); }
-function _pobs_ir_cat(args)    { _pobs_clamp("ir_cat_idx",    args); }
-function _pobs_ir_file(args)   { _pobs_clamp("ir_file_idx",   args); }
+function _pobs_nam_cat(args)    { _pobs_clamp("nam_cat_idx",   args); }
+function _pobs_ir_cat(args)     { _pobs_clamp("ir_cat_idx",    args); }
+// Per-category NAM model observers (Max JS requires named function refs for LiveAPI callbacks)
+function _pobs_Model0(args)     { _pobs_clamp("Model0",  args); }
+function _pobs_Model1(args)     { _pobs_clamp("Model1",  args); }
+function _pobs_Model2(args)     { _pobs_clamp("Model2",  args); }
+function _pobs_Model3(args)     { _pobs_clamp("Model3",  args); }
+function _pobs_Model4(args)     { _pobs_clamp("Model4",  args); }
+function _pobs_Model5(args)     { _pobs_clamp("Model5",  args); }
+function _pobs_Model6(args)     { _pobs_clamp("Model6",  args); }
+function _pobs_Model7(args)     { _pobs_clamp("Model7",  args); }
+function _pobs_Model8(args)     { _pobs_clamp("Model8",  args); }
+function _pobs_Model9(args)     { _pobs_clamp("Model9",  args); }
+function _pobs_Model10(args)    { _pobs_clamp("Model10", args); }
+function _pobs_Model11(args)    { _pobs_clamp("Model11", args); }
+function _pobs_Model12(args)    { _pobs_clamp("Model12", args); }
+function _pobs_Model13(args)    { _pobs_clamp("Model13", args); }
+// Per-category IR file observers
+function _pobs_IRFile0(args)    { _pobs_clamp("IRFile0", args); }
+function _pobs_IRFile1(args)    { _pobs_clamp("IRFile1", args); }
+function _pobs_IRFile2(args)    { _pobs_clamp("IRFile2", args); }
+function _pobs_IRFile3(args)    { _pobs_clamp("IRFile3", args); }
+function _pobs_IRFile4(args)    { _pobs_clamp("IRFile4", args); }
 
 function _pobs_clamp(varname, args) {
     if (_lapi_guard[varname] || !args || args[0] !== "value") return;
     var v = parseInt(args[1], 10);
     var cnt;
-    if      (varname === "nam_cat_idx")   cnt = nam_categories.length;
-    else if (varname === "nam_model_idx") cnt = nam_models.length;
-    else if (varname === "ir_cat_idx")    cnt = ir_categories.length;
-    else                                  cnt = ir_files.length;
+    if (varname === "nam_cat_idx") {
+        cnt = nam_categories.length;
+    } else if (varname === "ir_cat_idx") {
+        cnt = ir_categories.length;
+    } else if (varname.slice(0, 5) === "Model") {
+        cnt = nam_models.length;   // only fires when this is the live.banks-active category
+    } else if (varname.slice(0, 6) === "IRFile") {
+        cnt = ir_files.length;
+    } else {
+        return;
+    }
     if (isNaN(v) || cnt === 0 || v < cnt) return;
     var c = cnt - 1;
     _lapi_guard[varname] = true;
     _lapi_obs[varname].set("value", c);
     _lapi_guard[varname] = false;
-    if      (varname === "nam_cat_idx")   select_nam_cat_by_push(c);
-    else if (varname === "nam_model_idx") select_nam_model_by_push(c);
-    else if (varname === "ir_cat_idx")    select_ir_cat_by_push(c);
-    else                                  select_ir_file_by_push(c);
+    if (varname === "nam_cat_idx")              select_nam_cat_by_push(c);
+    else if (varname === "ir_cat_idx")          select_ir_cat_by_push(c);
+    else if (varname.slice(0, 5) === "Model")   select_nam_model_by_push(c);
+    else                                        select_ir_file_by_push(c);
 }
 
 var _pobs_cbfns = {
-    "nam_cat_idx":   _pobs_nam_cat,
-    "nam_model_idx": _pobs_nam_model,
-    "ir_cat_idx":    _pobs_ir_cat,
-    "ir_file_idx":   _pobs_ir_file
+    "nam_cat_idx":  _pobs_nam_cat,
+    "ir_cat_idx":   _pobs_ir_cat,
+    "Model0":  _pobs_Model0,  "Model1":  _pobs_Model1,  "Model2":  _pobs_Model2,
+    "Model3":  _pobs_Model3,  "Model4":  _pobs_Model4,  "Model5":  _pobs_Model5,
+    "Model6":  _pobs_Model6,  "Model7":  _pobs_Model7,  "Model8":  _pobs_Model8,
+    "Model9":  _pobs_Model9,  "Model10": _pobs_Model10, "Model11": _pobs_Model11,
+    "Model12": _pobs_Model12, "Model13": _pobs_Model13,
+    "IRFile0": _pobs_IRFile0, "IRFile1": _pobs_IRFile1, "IRFile2": _pobs_IRFile2,
+    "IRFile3": _pobs_IRFile3, "IRFile4": _pobs_IRFile4,
 };
 
 function _setupPushObs(varname, shortname) {
+    if (!_pobs_cbfns[varname]) return;
     try {
         var dev = new LiveAPI("this_device");
         var n   = dev.getcount("parameters");
@@ -99,19 +131,114 @@ function _setupPushObs(varname, shortname) {
 }
 
 var _obs_task = null;
+var _banks_created = false;  // set by _populateBanks(); guards against double-populate
 
 function _setupAllPushObs() {
-    _setupPushObs("nam_cat_idx",   "NamCat");
-    _setupPushObs("nam_model_idx", "Model");
-    _setupPushObs("ir_cat_idx",    "IRCat");
-    _setupPushObs("ir_file_idx",   "IRFile");
+    _setupPushObs("nam_cat_idx", "NamCat");
+    _setupPushObs("ir_cat_idx",  "IRCat");
+    for (var mi = 0; mi < 20; mi++) {
+        var mvn = "Model" + mi;
+        if (!_pobs_cbfns[mvn]) break;
+        _setupPushObs(mvn, mvn);
+    }
+    for (var fi = 0; fi < 10; fi++) {
+        var fvn = "IRFile" + fi;
+        if (!_pobs_cbfns[fvn]) break;
+        _setupPushObs(fvn, fvn);
+    }
+    // Params are registered by now — populate banks if init_banks() hasn't yet.
+    _populateBanks();
+}
+
+// ─── live.banks messaging ─────────────────────────────────────────────────────
+// Two-phase approach:
+//   _createBankStructure() at loadbang: sends 'new' to create empty bank slots.
+//     Params aren't registered yet so slots are empty, but bank_count > 0 forces
+//     Push into MaxDeviceParameterBank mode (not DeviceParameterBank/all-columns).
+//   _populateBanks() at init_banks() (10ms after live.thisdevice): uses 'edit' to
+//     fill each slot with the real param name. Fires bank_parameters_changed so
+//     Push updates the display without requiring a navigate-away-back cycle.
+// _sendBanksEdit() is called on every category change to update the active slot.
+
+function _sendBanksEdit(bankId, slotIdx, paramName) {
+    if (!_patcher) _patcher = this.patcher;
+    var b = _patcher && _patcher.getnamed("live_banks");
+    if (!b) return;
+    b.message("edit", bankId, "-", slotIdx, paramName);
+    post("live_banks edit " + bankId + " slot " + slotIdx + " → " + paramName + "\n");
+}
+
+function _createBankStructure() {
+    if (!_patcher) _patcher = this.patcher;
+    var b = _patcher && _patcher.getnamed("live_banks");
+    if (!b) return;
+    // new 1 fails silently at loadbang; new 0 always works (insert at index 0).
+    // Workaround: insert IR as bank 0, then insert NAM as bank 0 (shifts IR to index 1).
+    // Both banks exist before Push selects the device → bank_count=2 → MaxDeviceParameterBank.
+    // Only edit (not new) is called after loadbang, avoiding on_banks_changed re-evaluation.
+    b.message("new", 0, "IR",  "IR Cat",  "IR File 0");   // bank 0=IR,  count=1
+    b.message("new", 0, "NAM", "NAM Cat", "NAM Model 0"); // bank 0=NAM, bank 1=IR, count=2
+    post("live_banks structure created (params pending)\n");
+}
+
+function _populateBanks() {
+    if (_banks_created) return;
+    if (!_patcher) _patcher = this.patcher;
+    var b = _patcher && _patcher.getnamed("live_banks");
+    if (!b) { post("live_banks NOT FOUND\n"); return; }
+    var catN = (selected_nam_cat >= 0) ? selected_nam_cat : 0;
+    var irN  = (selected_ir_cat  >= 0) ? selected_ir_cat  : 0;
+    // Only bank 0 exists at this point (loadbang only allows one new call).
+    // Bank 1 (IR) is created separately in add_ir_bank() at 30ms to avoid
+    // racing with this edit — new fires on_banks_changed which can cause a
+    // transient bank_count=0 when fired in the same tick as edit.
+    b.message("edit", 0, "NAM", 0, "NAM Cat", 1, "NAM Model " + catN);
+    _banks_created = true;
+    post("live_banks populated: NAM=Model" + catN + "\n");
+    b.message("getcount");
+    b.message("getname", 0);
+}
+
+// Called from patch 10ms after live.thisdevice — params are registered by then.
+function init_banks() {
+    _populateBanks();
+}
+
+var _ir_bank_added = false;
+
+// Called 30ms after live.thisdevice (separate tick from init_banks/edit 0).
+// Creates bank 1 (IR) via new — fires on_banks_changed, but by now edit 0 has
+// fully settled so Push re-evaluates with bank_count=2.
+function add_ir_bank() {
+    if (_ir_bank_added) return;
+    if (!_patcher) _patcher = this.patcher;
+    var b = _patcher && _patcher.getnamed("live_banks");
+    if (!b) return;
+    var irN = (selected_ir_cat >= 0) ? selected_ir_cat : 0;
+    b.message("new", 1, "IR", "IR Cat", "IR File " + irN);
+    _ir_bank_added = true;
+    post("IR bank added: IR=IRFile" + irN + "\n");
+    b.message("getcount");
+    b.message("getname", 0);
+    b.message("getname", 1);
+}
+
+// Helper: set the value of a hidden live.menu by varname via patcher.getnamed.
+// Used to mirror model/file index to the per-category shadow menu without needing
+// a receive/prepend-set chain in the patch.
+function _setPushMenuValue(varname, idx) {
+    if (!_patcher) _patcher = this.patcher;
+    var b = _patcher && _patcher.getnamed(varname);
+    if (b) b.message("set", idx);
 }
 
 function loadbang() {
     _patcher = this.patcher;
     outlet(OUT_IR_NORM, 1.0);  // pass-through until an IR file is loaded
-    // LiveAPI("this_device") is not available at loadbang time — defer until
-    // Live has finished registering the device (matches the 1000ms get_all delay).
+    // Create empty bank structure so Push picks MaxDeviceParameterBank mode.
+    // Slots are empty until _populateBanks() runs after live.thisdevice + 10ms.
+    _createBankStructure();
+    // LiveAPI("this_device") is not available at loadbang time — defer observers.
     _obs_task = new Task(_setupAllPushObs, this);
     _obs_task.schedule(1500);
 }
@@ -302,13 +429,13 @@ function _populate_nam_models(idx) {
     if (isNaN(idx) || idx < 0 || idx >= nam_categories.length) return;
     selected_nam_cat = idx;
     syncPushIndex("nam_numbox_set_cat", idx);
+    _sendBanksEdit(0, 1, "NAM Model " + idx);
     var cat = nam_categories[idx];
     var raw = listFilesByExt(cat.abspath, ".nam");
     nam_models = _makeDisplayFiles(raw, /\.nam$/i, trim_prefix_nam);
     for (var i = 0; i < nam_models.length; i++) {
         nam_models[i].relpath = cat.name + "/" + nam_models[i].origname;
     }
-    _syncPushNames("nam_model_idx", nam_models);
     if (nam_models.length === 0) {
         outlet(OUT_NAM_MODEL, "clear");
         setStatus("No .nam files in " + cat.name);
@@ -348,7 +475,8 @@ function select_nam_model(idx) {
     idx = parseInt(idx, 10);
     if (isNaN(idx) || idx < 0 || idx >= nam_models.length) return;
     selected_nam_model = idx;
-    syncPushIndex("nam_numbox_set_model", idx);
+    syncPushIndex("nam_numbox_set_model", idx);                     // keeps old shadow menu in sync
+    _setPushMenuValue("Model" + selected_nam_cat, idx);             // mirrors to active per-cat menu
     var m = nam_models[idx];
     outlet(OUT_NAM_LOAD, "load", m.abspath);
     setStatus("Loading model: " + m.name);
@@ -386,13 +514,13 @@ function _populate_ir_files(idx) {
     if (isNaN(idx) || idx < 0 || idx >= ir_categories.length) return;
     selected_ir_cat = idx;
     syncPushIndex("ir_numbox_set_cat", idx);
+    _sendBanksEdit(1, 1, "IR File " + idx);
     var cat = ir_categories[idx];
     var raw = listFilesByExt(cat.abspath, ".wav");
     ir_files = _makeDisplayFiles(raw, /\.(aiff?|wav)$/i, trim_prefix_ir);
     for (var i = 0; i < ir_files.length; i++) {
         ir_files[i].relpath = cat.name + "/" + ir_files[i].origname;
     }
-    _syncPushNames("ir_file_idx", ir_files);
     if (ir_files.length === 0) {
         outlet(OUT_IR, "clear");
         setStatus("No .wav files in " + cat.name);
@@ -432,7 +560,8 @@ function select_ir(idx) {
     idx = parseInt(idx, 10);
     if (isNaN(idx) || idx < 0 || idx >= ir_files.length) return;
     selected_ir_file = idx;
-    syncPushIndex("ir_numbox_set_file", idx);
+    syncPushIndex("ir_numbox_set_file", idx);                  // keeps old shadow menu in sync
+    _setPushMenuValue("IRFile" + selected_ir_cat, idx);        // mirrors to active per-cat menu
     var f = ir_files[idx];
     outlet(OUT_IR_LOAD, "read", f.abspath);
     outlet(OUT_IR_NORM, 0.12589);
