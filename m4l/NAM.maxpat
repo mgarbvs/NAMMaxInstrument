@@ -347,44 +347,6 @@
 			},
 			{
 				"box": {
-					"id": "delay_ir_bank",
-					"maxclass": "newobj",
-					"numinlets": 2,
-					"numoutlets": 1,
-					"outlettype": [
-						"bang"
-					],
-					"patching_rect": [
-						700,
-						36,
-						80,
-						22
-					],
-					"text": "delay 30",
-					"varname": "delay_ir_bank"
-				}
-			},
-			{
-				"box": {
-					"id": "msg_ir_bank",
-					"maxclass": "message",
-					"numinlets": 2,
-					"numoutlets": 1,
-					"outlettype": [
-						""
-					],
-					"patching_rect": [
-						800,
-						36,
-						120,
-						22
-					],
-					"text": "add_ir_bank",
-					"varname": "msg_ir_bank"
-				}
-			},
-			{
-				"box": {
 					"id": "pre_sr_changed",
 					"maxclass": "newobj",
 					"numinlets": 1,
@@ -4874,42 +4836,6 @@
 				"patchline": {
 					"source": [
 						"msg_init_banks",
-						0
-					],
-					"destination": [
-						"jsloader",
-						0
-					]
-				}
-			},
-			{
-				"patchline": {
-					"source": [
-						"thisdev",
-						0
-					],
-					"destination": [
-						"delay_ir_bank",
-						0
-					]
-				}
-			},
-			{
-				"patchline": {
-					"source": [
-						"delay_ir_bank",
-						0
-					],
-					"destination": [
-						"msg_ir_bank",
-						0
-					]
-				}
-			},
-			{
-				"patchline": {
-					"source": [
-						"msg_ir_bank",
 						0
 					],
 					"destination": [

@@ -172,12 +172,9 @@ function _createBankStructure() {
     if (!_patcher) _patcher = this.patcher;
     var b = _patcher && _patcher.getnamed("live_banks");
     if (!b) return;
-    // new 1 fails silently at loadbang; new 0 always works (insert at index 0).
-    // Workaround: insert IR as bank 0, then insert NAM as bank 0 (shifts IR to index 1).
-    // Both banks exist before Push selects the device → bank_count=2 → MaxDeviceParameterBank.
-    // Only edit (not new) is called after loadbang, avoiding on_banks_changed re-evaluation.
-    b.message("new", 0, "IR",  "IR Cat",  "IR File 0");   // bank 0=IR,  count=1
-    b.message("new", 0, "NAM", "NAM Cat", "NAM Model 0"); // bank 0=NAM, bank 1=IR, count=2
+    // new 0 at loadbang: minimal placeholder so bank_count > 0 before Push evaluates.
+    // Real slot assignments happen in _populateBanks() via edit at 10ms.
+    b.message("new", 0, "NAM", "NAM Cat", "NAM Model 0");
     post("live_banks structure created (params pending)\n");
 }
 
@@ -192,7 +189,8 @@ function _populateBanks() {
     // Bank 1 (IR) is created separately in add_ir_bank() at 30ms to avoid
     // racing with this edit — new fires on_banks_changed which can cause a
     // transient bank_count=0 when fired in the same tick as edit.
-    b.message("edit", 0, "NAM", 0, "NAM Cat", 1, "NAM Model " + catN, 2, "NAM Dry/Wet", 3, "Bypass");
+    b.message("edit", 0, "NAM", 0, "NAM Cat", 1, "NAM Model " + catN, 2, "NAM Dry/Wet", 3, "IR Cat", 4, "IR File " + irN);
+    b.message("edit", 0, "-", 5, "IR Dry/Wet", 6, "Noise Gate Threshold", 7, "Noise Gate On");
     _banks_created = true;
     post("live_banks populated: NAM=Model" + catN + "\n");
     b.message("getcount");
@@ -204,24 +202,6 @@ function init_banks() {
     _populateBanks();
 }
 
-var _ir_bank_added = false;
-
-// Called 30ms after live.thisdevice (separate tick from init_banks/edit 0).
-// Creates bank 1 (IR) via new — fires on_banks_changed, but by now edit 0 has
-// fully settled so Push re-evaluates with bank_count=2.
-function add_ir_bank() {
-    if (_ir_bank_added) return;
-    if (!_patcher) _patcher = this.patcher;
-    var b = _patcher && _patcher.getnamed("live_banks");
-    if (!b) return;
-    var irN = (selected_ir_cat >= 0) ? selected_ir_cat : 0;
-    b.message("new", 1, "IR", "IR Cat", "IR File " + irN);
-    _ir_bank_added = true;
-    post("IR bank added: IR=IRFile" + irN + "\n");
-    b.message("getcount");
-    b.message("getname", 0);
-    b.message("getname", 1);
-}
 
 // Helper: set the value of a hidden live.menu by varname via patcher.getnamed.
 // Used to mirror model/file index to the per-category shadow menu without needing
@@ -514,7 +494,7 @@ function _populate_ir_files(idx) {
     if (isNaN(idx) || idx < 0 || idx >= ir_categories.length) return;
     selected_ir_cat = idx;
     syncPushIndex("ir_numbox_set_cat", idx);
-    _sendBanksEdit(1, 1, "IR File " + idx);
+    _sendBanksEdit(0, 4, "IR File " + idx);
     var cat = ir_categories[idx];
     var raw = listFilesByExt(cat.abspath, ".wav");
     ir_files = _makeDisplayFiles(raw, /\.(aiff?|wav)$/i, trim_prefix_ir);
@@ -813,8 +793,11 @@ if (typeof module !== "undefined" && module.exports) {
             getIrFiles: function() { return ir_files; },
             populateNamModels: _populate_nam_models,
             populateIrFiles: _populate_ir_files,
+            populateBanks: _populateBanks,
             getTrimPrefixNam: function() { return trim_prefix_nam; },
             getTrimPrefixIr: function() { return trim_prefix_ir; },
+            setPatcherForTest: function(p) { _patcher = p; },
+            resetBanksForTest: function() { _banks_created = false; },
         }
     };
 }

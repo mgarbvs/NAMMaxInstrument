@@ -120,14 +120,16 @@ live.thisdevice → delay 10ms → init()
 - `b.message("new", 0, "NAM", "NAM Cat", "NAM Model 0")` — bank count goes to 1
 - Keep the `new` call as short as possible. Do NOT include all desired slots here — only what's needed to ensure count > 0. Adding extra registered-param names (e.g. "NAM Dry/Wet") to the `new` call at loadbang can shift the timing of the 30ms `on_banks_changed` race and break first-load.
 
-**`edit` at 10ms** (params registered) — put ALL real slot assignments here:
+**`edit` at 10ms** (params registered) — put ALL real slot assignments here. For 6+ slots, split across two calls to stay under the ~13-atom-per-call limit:
 ```javascript
-b.message("edit", 0, "NAM", 0, "NAM Cat", 1, "NAM Model " + catIdx, 2, "NAM Dry/Wet", 3, "Bypass");
-b.message("edit", 1, "IR",  0, "IR Cat",  1, "IR File "  + irIdx);
+// First call: real bank name + slots 0–4 (≤13 atoms total — safe)
+b.message("edit", 0, "NAM", 0, "NAM Cat", 1, "NAM Model " + catIdx, 2, "NAM Dry/Wet", 3, "IR Cat", 4, "IR File " + irIdx);
+// Second call: "-" preserves bank name + remaining slots (also safe)
+b.message("edit", 0, "-",   5, "IR Dry/Wet", 6, "Noise Gate Threshold", 7, "Noise Gate On");
 ```
-- Sets bank name AND all slots atomically in one call
-- Fires one `bank_parameters_changed` per bank
-- Using two separate `edit` calls (one per slot) fires two events rapidly — avoid this
+- First call sets bank name; second uses `"-"` to avoid the "real name in two calls" problem
+- Each call fires one `bank_parameters_changed` — two rapid events is fine
+- Do NOT exceed ~13 atoms in a single `edit` call — larger calls fire `on_banks_changed` instead
 
 **Subsequent slot updates** (e.g. on category switch):
 ```javascript
@@ -143,7 +145,14 @@ b.message("edit", bankId, "-", slotIdx, paramName);
 - **`new` inserts, never replaces.** Calling `new 0 "NAM" ...` when bank 0 already exists pushes the existing bank to index 1. Don't call `new` for the same bank twice.
 - **Only `new 0` works at loadbang.** `new 1 "IR" ...` silently fails (`cannot edit missing bank 1` appears later). `new 0` can be called multiple times at loadbang — each call inserts at index 0 and shifts existing banks up. Use this to pre-create all banks: `new 0 "IR" ...` then `new 0 "NAM" ...` gives bank 0=NAM, bank 1=IR, count=2.
 - **Never call `new` after live.thisdevice.** `new` fires `on_banks_changed`, which causes Push to re-call `create_device_bank`. During the transient reset inside `new`, `get_bank_count()` may briefly return 0, causing Push to fall back to `DeviceParameterBank` (all-columns). After loadbang, use only `edit` — it fires `bank_parameters_changed` instead, which only updates the parameter list without re-evaluating bank type.
+- **Never create a second bank with `new` after live.thisdevice, even in a delayed tick.** The `on_banks_changed` race exists whenever `new` is called after loadbang, regardless of how long after. The only safe pattern is a single bank (bank 0) with all desired slots, populated entirely via `edit` at 10ms.
 - **`edit` with a real name vs `-`:** When `_populateBanks()` runs at 10ms, the bank name from the loadbang `new` call may be empty (parameter hub not yet connected). Use `edit bank_id "RealName" ...` to set it properly. Use `-` in subsequent per-slot updates to preserve the already-set name.
-- **Using a real name in two separate `edit` calls breaks banks.** Combine into one call.
+- **Using a real name in two separate `edit` calls breaks banks.** Combine into one call — but see the atom-count limit below.
+- **`edit` atom-count limit: max ~13 atoms per call.** A single `edit` call with more than ~13 atoms (i.e., more than 5 index-based slot pairs) appears to fire `on_banks_changed` instead of `bank_parameters_changed`, causing the same all-columns regression as a `new` call. The safe pattern for 6+ slots is to split across two calls: the first sets slots 0–4 with the real bank name, the second sets the remaining slots using `"-"` to preserve the name:
+  ```javascript
+  b.message("edit", 0, "NAM", 0, "NAM Cat", 1, "NAM Model 0", 2, "NAM Dry/Wet", 3, "IR Cat", 4, "IR File 0");
+  b.message("edit", 0, "-",   5, "IR Dry/Wet", 6, "Noise Gate Threshold", 7, "Noise Gate On");
+  ```
+  Each call fires `bank_parameters_changed` once. Using `"-"` in the second call avoids the "real name in two calls" issue.
 - **Keep `new` at loadbang minimal.** Only include 1–2 placeholder slot names. Do not include all desired slots — put those in the `edit` at 10ms. Extra params in the loadbang `new` call (especially registered params like `live.dial`/`live.toggle` long names) can disrupt the 30ms `on_banks_changed` timing and cause all-columns on first load.
 - **`parameter_enable=0` on navigation/display params** prevents them from creating an unwanted main bank page on Push.

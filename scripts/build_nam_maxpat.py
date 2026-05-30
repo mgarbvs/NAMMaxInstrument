@@ -383,14 +383,6 @@ def build():
     lines.append(line("delay_init_banks", 0, "msg_init_banks", 0))
     lines.append(line("msg_init_banks", 0, "jsloader", 0))
 
-    # 30ms: add_ir_bank — creates bank 1 (IR) via new in its own tick.
-    # Separating from init_banks avoids on_banks_changed racing with bank_parameters_changed.
-    boxes.append(newobj("delay_ir_bank", "delay 30", 700, 36,
-                        numinlets=2, numoutlets=1, outlettype=["bang"], w=80))
-    boxes.append(msgbox("msg_ir_bank", "add_ir_bank", 800, 36, w=120))
-    lines.append(line("thisdev", 0, "delay_ir_bank", 0))
-    lines.append(line("delay_ir_bank", 0, "msg_ir_bank", 0))
-    lines.append(line("msg_ir_bank", 0, "jsloader", 0))
 
     boxes.append(newobj("pre_sr_changed", "prepend sr_changed",
                         600, 6, numinlets=1, numoutlets=1, outlettype=[""], w=140))
