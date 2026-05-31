@@ -101,58 +101,60 @@ Default bank name when `get_bank_name()` returns `""`. 1-indexed: bank index 0 �
 
 ---
 
-## Two-phase initialization pattern
+## Solution: bake the bank into the device at build time (current approach)
 
-**Problem:** Push calls `create_device_bank` before or shortly after `loadbang`. At `loadbang`, Live hasn't yet registered device parameters, so `live.banks new` can create structure but the name may not be persisted via the parameter hub. At 0ms after `live.thisdevice`, `new` is still silently ignored. At 10ms, params are registered and `new`/`edit` work fully.
+**The `get_bank_count() > 0` gate is evaluated once at device-component creation and cached** (see mechanism above). The only way to win it reliably is for the bank to already exist *before any JS runs*. Per the Cycling '74 `live.banks` reference: **"Banks are saved with the device, but can be modified in real-time."** So we bake the bank into the saved `.amxd` and never create it at runtime.
 
-**Solution:**
+Banks persist in the patcher under **`patcher.parameters.parameterbanks`**. `build_nam_maxpat.py` emits this block (`_build_parameters_block()`), so the device reports `bank_count = 1` the instant Live loads it → Push picks `MaxDeviceParameterBank` on first paint. No race, no navigate-away-and-back.
 
+### Format
+
+`patcher.parameters` is a registry of every parameter object **plus** the bank layout:
+
+```jsonc
+"parameters": {
+  // one entry per parameter object, keyed by varname: [longname, shortname, modulation_mode]
+  "Model0":          ["NAM Model 0", "Model0", 0],
+  "ir_blend_dial":   ["IR Dry/Wet",  "IR",     0],
+  // ... (49 entries for the NAM device) ...
+  "parameterbanks": {
+    "0": {
+      "index": 0,
+      "name": "NAM",
+      "parameters": ["NAM Cat", "NAM Model 0", "NAM Dry/Wet", "IR Cat",
+                     "IR File 0", "IR Dry/Wet", "Noise Gate Threshold", "Noise Gate On"],
+      "buttons": ["-", "-", "-", "-", "-", "-", "-", "-"]
+    }
+  },
+  "inherited_shortname": 1
+}
 ```
-loadbang  → live.banks new (empty bank structure, bank_count > 0)
-             → Push picks MaxDeviceParameterBank ✓
 
-live.thisdevice → delay 10ms → init()
-             → live.banks edit (real params + real name, one call per bank)
-             → fires bank_parameters_changed → Push updates display ✓
-```
+- Bank slots reference parameters by **longname**; each must exist in the registry (the builder asserts this).
+- `buttons` is the Push 3 button row (8 slots, `-` = unused).
+- The registry is **generated from the boxes** at build time, so it can't drift from the actual parameters. Verified byte-identical to what Max itself writes when you define a bank via the editor's Parameter Banks window (double-click `live.banks`) and save.
 
-**`new` at loadbang** — minimal placeholder only:
-- `b.message("new", 0, "NAM", "NAM Cat", "NAM Model 0")` — bank count goes to 1
-- Keep the `new` call as short as possible. Do NOT include all desired slots here — only what's needed to ensure count > 0. Adding extra registered-param names (e.g. "NAM Dry/Wet") to the `new` call at loadbang can shift the timing of the 30ms `on_banks_changed` race and break first-load.
+### Runtime: `edit` only, never `new`
 
-**`edit` at 10ms** (params registered) — put ALL real slot assignments here. For 6+ slots, split across two calls to stay under the ~13-atom-per-call limit:
+At runtime the JS only ever sends **`edit`** to mutate the baked bank in place — to point the model/IR slot at the current category's shadow menu:
+
 ```javascript
-// First call: real bank name + slots 0–4 (≤13 atoms total — safe)
-b.message("edit", 0, "NAM", 0, "NAM Cat", 1, "NAM Model " + catIdx, 2, "NAM Dry/Wet", 3, "IR Cat", 4, "IR File " + irIdx);
-// Second call: "-" preserves bank name + remaining slots (also safe)
-b.message("edit", 0, "-",   5, "IR Dry/Wet", 6, "Noise Gate Threshold", 7, "Noise Gate On");
+// nam_loader.js — on init (init_banks, +10ms) and on every category switch
+b.message("edit", bankId, "-", slotIdx, paramName);   // e.g. slot 1 → "NAM Model 3"
 ```
-- First call sets bank name; second uses `"-"` to avoid the "real name in two calls" problem
-- Each call fires one `bank_parameters_changed` — two rapid events is fine
-- Do NOT exceed ~13 atoms in a single `edit` call — larger calls fire `on_banks_changed` instead
 
-**Subsequent slot updates** (e.g. on category switch):
-```javascript
-b.message("edit", bankId, "-", slotIdx, paramName);
-```
-- Uses `-` to preserve existing bank name
-- Only updates the one changed slot
+**Never send `new`.** Bank 0 already exists from the bake; `new 0` *inserts* and pushes the baked bank to index 1, producing a spurious second page (see gotchas). `edit` mutates in place, keeps `bank_count` ≥ 1 throughout, and fires `bank_parameters_changed` (which updates slots without re-evaluating bank type).
+
+> ### ⚠️ Empty `parameterbanks` crashes Live — populated is required
+> An **empty** `parameterbanks` dict alongside `parameter_enable=1` objects triggers a NULL-deref in `param_banks_fromdictionary` (crashes Live on load and Max on save — see `KNOWLEDGE_BASE_MAX_INSTRUMENTS.md` §2). The rule is therefore: a device either has **no** top-level `parameters` key at all (no custom Push bank), **or** a `parameters` block whose `parameterbanks` is **non-empty** (custom bank, our case). Never ship an empty one. `build_amxd.py` warns if it sees an all-empty `parameterbanks`; `validate_maxpat.py` fails on it.
 
 ---
 
-## Key gotchas
+## Superseded: runtime two-phase `new`/`edit` (historical — do not use)
 
-- **`new` inserts, never replaces.** Calling `new 0 "NAM" ...` when bank 0 already exists pushes the existing bank to index 1. Don't call `new` for the same bank twice.
-- **Only `new 0` works at loadbang.** `new 1 "IR" ...` silently fails (`cannot edit missing bank 1` appears later). `new 0` can be called multiple times at loadbang — each call inserts at index 0 and shifts existing banks up. Use this to pre-create all banks: `new 0 "IR" ...` then `new 0 "NAM" ...` gives bank 0=NAM, bank 1=IR, count=2.
-- **Never call `new` after live.thisdevice.** `new` fires `on_banks_changed`, which causes Push to re-call `create_device_bank`. During the transient reset inside `new`, `get_bank_count()` may briefly return 0, causing Push to fall back to `DeviceParameterBank` (all-columns). After loadbang, use only `edit` — it fires `bank_parameters_changed` instead, which only updates the parameter list without re-evaluating bank type.
-- **Never create a second bank with `new` after live.thisdevice, even in a delayed tick.** The `on_banks_changed` race exists whenever `new` is called after loadbang, regardless of how long after. The only safe pattern is a single bank (bank 0) with all desired slots, populated entirely via `edit` at 10ms.
-- **`edit` with a real name vs `-`:** When `_populateBanks()` runs at 10ms, the bank name from the loadbang `new` call may be empty (parameter hub not yet connected). Use `edit bank_id "RealName" ...` to set it properly. Use `-` in subsequent per-slot updates to preserve the already-set name.
-- **Using a real name in two separate `edit` calls breaks banks.** Combine into one call — but see the atom-count limit below.
-- **`edit` atom-count limit: max ~13 atoms per call.** A single `edit` call with more than ~13 atoms (i.e., more than 5 index-based slot pairs) appears to fire `on_banks_changed` instead of `bank_parameters_changed`, causing the same all-columns regression as a `new` call. The safe pattern for 6+ slots is to split across two calls: the first sets slots 0–4 with the real bank name, the second sets the remaining slots using `"-"` to preserve the name:
-  ```javascript
-  b.message("edit", 0, "NAM", 0, "NAM Cat", 1, "NAM Model 0", 2, "NAM Dry/Wet", 3, "IR Cat", 4, "IR File 0");
-  b.message("edit", 0, "-",   5, "IR Dry/Wet", 6, "Noise Gate Threshold", 7, "Noise Gate On");
-  ```
-  Each call fires `bank_parameters_changed` once. Using `"-"` in the second call avoids the "real name in two calls" issue.
-- **Keep `new` at loadbang minimal.** Only include 1–2 placeholder slot names. Do not include all desired slots — put those in the `edit` at 10ms. Extra params in the loadbang `new` call (especially registered params like `live.dial`/`live.toggle` long names) can disrupt the 30ms `on_banks_changed` timing and cause all-columns on first load.
-- **`parameter_enable=0` on navigation/display params** prevents them from creating an unwanted main bank page on Push.
+> Before we discovered banks are saved with the device, the bank was built at runtime: a placeholder `new 0` at `loadbang` to force `bank_count > 0`, then `edit` at +10ms to fill slots. This **lost the race on a cold device add** (Push enumerated before the JS ran → all-columns on first load) and was riddled with timing traps (`new` firing `on_banks_changed`, the ~13-atom `edit` limit, the 30ms race). The build-time bake above replaces it entirely. The traps are retained below only because they explain why **`new` must never be sent at runtime** even now.
+
+- **`new` inserts, never replaces.** `new 0 "NAM" ...` when bank 0 exists pushes the existing bank to index 1. With a baked bank, any `new` produces a duplicate page.
+- **`new` after `live.thisdevice` can flash all-columns.** `new` fires `on_banks_changed` → Push re-calls `create_device_bank`; during the transient reset `get_bank_count()` may briefly read 0 → `DeviceParameterBank` fallback. `edit` fires `bank_parameters_changed` instead (no bank-type re-eval), so `edit` is always safe.
+- **~13-atom `edit` limit.** A single `edit` with more than ~13 atoms (>5 index/name pairs) could fire `on_banks_changed` instead of `bank_parameters_changed`. Our per-slot `edit` calls are tiny, so this no longer bites — but keep slot edits small.
+- **`parameter_enable=0` on navigation/display params** keeps them out of the auto "main bank" so they don't add an extra Push page.

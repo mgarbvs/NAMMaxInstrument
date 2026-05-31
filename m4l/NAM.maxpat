@@ -1926,7 +1926,9 @@
 							"parameter_type": 2,
 							"parameter_enum": [
 								"1964 VOX AC50 Mk. I (Potentially ex-beatles)",
+								"1976 Fender Princeton Reverb - Silverface",
 								"Acoustic Sim",
+								"JHS Colour Box V2",
 								"Neve + 1176 + 1176",
 								"Sovtek Green Russian Big Muff Clone",
 								"Sunn Lucky Number 7 Capture"
@@ -7053,6 +7055,304 @@
 				}
 			}
 		],
+		"parameters": {
+			"in_gain": [
+				"Input",
+				"In",
+				0
+			],
+			"out_gain": [
+				"NAM Out",
+				"Out",
+				0
+			],
+			"bypass_toggle": [
+				"Bypass",
+				"Byp",
+				0
+			],
+			"tone_expand_toggle": [
+				"Tone Section",
+				"Tone",
+				0
+			],
+			"ir_expand_toggle": [
+				"IR Section",
+				"IR",
+				0
+			],
+			"btn_nam_root": [
+				"Set NAM Root",
+				"NAMRoot",
+				0
+			],
+			"trim_pfx_toggle_nam": [
+				"NAM Trim Prefix",
+				"TrimNAM",
+				0
+			],
+			"btn_cat_prev": [
+				"Cat Prev",
+				"CatPrev",
+				0
+			],
+			"btn_cat_next": [
+				"Cat Next",
+				"CatNext",
+				0
+			],
+			"btn_model_prev": [
+				"Model Prev",
+				"ModPrev",
+				0
+			],
+			"btn_model_next": [
+				"Model Next",
+				"ModNext",
+				0
+			],
+			"nam_cat_idx": [
+				"NAM Cat",
+				"NamCat",
+				0
+			],
+			"Model0": [
+				"NAM Model 0",
+				"Model0",
+				0
+			],
+			"Model1": [
+				"NAM Model 1",
+				"Model1",
+				0
+			],
+			"Model2": [
+				"NAM Model 2",
+				"Model2",
+				0
+			],
+			"Model3": [
+				"NAM Model 3",
+				"Model3",
+				0
+			],
+			"Model4": [
+				"NAM Model 4",
+				"Model4",
+				0
+			],
+			"Model5": [
+				"NAM Model 5",
+				"Model5",
+				0
+			],
+			"Model6": [
+				"NAM Model 6",
+				"Model6",
+				0
+			],
+			"Model7": [
+				"NAM Model 7",
+				"Model7",
+				0
+			],
+			"Model8": [
+				"NAM Model 8",
+				"Model8",
+				0
+			],
+			"Model9": [
+				"NAM Model 9",
+				"Model9",
+				0
+			],
+			"Model10": [
+				"NAM Model 10",
+				"Model10",
+				0
+			],
+			"Model11": [
+				"NAM Model 11",
+				"Model11",
+				0
+			],
+			"Model12": [
+				"NAM Model 12",
+				"Model12",
+				0
+			],
+			"Model13": [
+				"NAM Model 13",
+				"Model13",
+				0
+			],
+			"IRFile0": [
+				"IR File 0",
+				"IRFile0",
+				0
+			],
+			"IRFile1": [
+				"IR File 1",
+				"IRFile1",
+				0
+			],
+			"IRFile2": [
+				"IR File 2",
+				"IRFile2",
+				0
+			],
+			"IRFile3": [
+				"IR File 3",
+				"IRFile3",
+				0
+			],
+			"IRFile4": [
+				"IR File 4",
+				"IRFile4",
+				0
+			],
+			"nam_live_drop": [
+				"NAM Drop",
+				"Drop",
+				0
+			],
+			"gate_thresh_dial": [
+				"Noise Gate Threshold",
+				"Gate",
+				0
+			],
+			"gate_on_toggle": [
+				"Noise Gate On",
+				"GateOn",
+				0
+			],
+			"nam_blend_dial": [
+				"NAM Dry/Wet",
+				"NAM",
+				0
+			],
+			"bass_dial": [
+				"Bass",
+				"Bass",
+				0
+			],
+			"mid_dial": [
+				"Mid",
+				"Mid",
+				0
+			],
+			"treble_dial": [
+				"Treble",
+				"Trbl",
+				0
+			],
+			"tone_on_toggle": [
+				"Tone Stack On",
+				"EQOn",
+				0
+			],
+			"ir_blend_dial": [
+				"IR Dry/Wet",
+				"IR",
+				0
+			],
+			"ir_on_toggle": [
+				"IR On",
+				"IROn",
+				0
+			],
+			"btn_ir_root": [
+				"Set IR Root",
+				"IRRoot",
+				0
+			],
+			"trim_pfx_toggle_ir": [
+				"IR Trim Prefix",
+				"TrimIR",
+				0
+			],
+			"btn_ir_cat_prev": [
+				"IR Cat Prev",
+				"IRCatPrv",
+				0
+			],
+			"btn_ir_cat_next": [
+				"IR Cat Next",
+				"IRCatNxt",
+				0
+			],
+			"btn_ir_prev": [
+				"IR Prev",
+				"IRPrev",
+				0
+			],
+			"btn_ir_next": [
+				"IR Next",
+				"IRNext",
+				0
+			],
+			"ir_cat_idx": [
+				"IR Cat",
+				"IRCat",
+				0
+			],
+			"ir_live_drop": [
+				"IR File Drop",
+				"IRDrop",
+				0
+			],
+			"parameterbanks": {
+				"0": {
+					"index": 0,
+					"name": "NAM",
+					"parameters": [
+						"NAM Cat",
+						"NAM Model 0",
+						"NAM Dry/Wet",
+						"IR Cat",
+						"IR File 0",
+						"IR Dry/Wet",
+						"Noise Gate Threshold",
+						"Noise Gate On"
+					],
+					"buttons": [
+						"-",
+						"-",
+						"-",
+						"-",
+						"-",
+						"-",
+						"-",
+						"-"
+					]
+				},
+				"1": {
+					"index": 1,
+					"name": "Tone",
+					"parameters": [
+						"Input",
+						"NAM Out",
+						"Bass",
+						"Mid",
+						"Treble",
+						"Tone Stack On",
+						"IR On",
+						"Bypass"
+					],
+					"buttons": [
+						"-",
+						"-",
+						"-",
+						"-",
+						"-",
+						"-",
+						"-",
+						"-"
+					]
+				}
+			},
+			"inherited_shortname": 1
+		},
 		"dependency_cache": [],
 		"autosave": 0
 	}

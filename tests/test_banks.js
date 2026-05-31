@@ -1,12 +1,13 @@
 "use strict";
-// Tests that protect against the Push 3 all-columns regression.
+// Tests that protect against the Push 3 bank regressions.
 //
-// Root cause: calling live.banks 'new' after loadbang fires on_banks_changed,
-// which causes Push to re-call create_device_bank. If get_bank_count()
-// transiently returns 0 during the 'new' call, Push falls back to
-// DeviceParameterBank (all-columns view). Only _createBankStructure (called
-// at loadbang) may send 'new' to live.banks. Everything after that must use
-// only 'edit'.
+// Bank 0 (NAM) is baked into the saved device as parameterbanks (built by
+// build_nam_maxpat.py), so it exists with bank_count > 0 before this JS runs —
+// fixing the original all-columns-on-first-load bug. Because the bank already
+// exists at index 0, sending live.banks 'new 0' would INSERT a duplicate and
+// push the baked bank to index 1 (spurious second page). So nam_loader.js must
+// never send 'new' to live.banks at all — only 'edit', which mutates the
+// existing baked bank in place.
 
 const assert = require("assert");
 const fs     = require("fs");
@@ -30,36 +31,23 @@ function test(name, fn) {
     catch (e) { console.error("  FAIL", name, "\n      ", e.message); failed++; }
 }
 
-// ─── Static: 'new' confined to _createBankStructure ──────────────────────────
+// ─── Static: no 'new' sent to live.banks anywhere ────────────────────────────
 
-test("live.banks 'new' only sent from _createBankStructure (static source check)", () => {
+test("nam_loader.js never sends live.banks 'new' (bank is baked)", () => {
     const src = fs.readFileSync(LOADER_PATH, "utf-8");
-
-    const fnStart = src.indexOf("function _createBankStructure(");
-    assert.ok(fnStart !== -1, "_createBankStructure must exist in nam_loader.js");
-
-    // Walk braces to find the end of the function body.
-    let depth = 0, i = src.indexOf("{", fnStart);
-    while (i < src.length) {
-        if (src[i] === "{") depth++;
-        else if (src[i] === "}") { if (--depth === 0) break; }
-        i++;
-    }
-    const fnEnd = i;
 
     // Find every .message("new" or .message('new' in the file.
     const re = /\.message\(\s*["']new["']/g;
     let m;
-    const outside = [];
+    const hits = [];
     while ((m = re.exec(src)) !== null) {
-        if (m.index < fnStart || m.index > fnEnd) {
-            outside.push(src.slice(0, m.index).split("\n").length);
-        }
+        hits.push(src.slice(0, m.index).split("\n").length);
     }
 
-    assert.strictEqual(outside.length, 0,
-        `live.banks 'new' found outside _createBankStructure at line(s) ${outside}. ` +
-        "This causes Push all-columns on load — only use 'edit' after loadbang.");
+    assert.strictEqual(hits.length, 0,
+        `live.banks 'new' found at line(s) ${hits}. The NAM bank is baked into ` +
+        "the device (parameterbanks); sending 'new' inserts a duplicate bank. " +
+        "Use 'edit' to mutate the existing bank in place.");
 });
 
 // ─── Behavioral: _populateBanks sends only 'edit' ────────────────────────────

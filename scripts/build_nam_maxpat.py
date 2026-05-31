@@ -321,6 +321,68 @@ def live_toggle(bid, longname, shortname, default, px, py):
     )
 
 
+# Push 3 parameter bank baked into the saved device. Each slot names a parameter
+# by its longname; baking this means the device reports bank_count>0 the instant
+# Live loads it — before nam_loader.js runs — so Push shows this one curated bank
+# instead of one encoder column per (hidden) shadow parameter. Without it, the
+# bank is only created at runtime via live.banks `new`, which loses the race
+# against Push's first device enumeration (the all-columns-on-first-load bug).
+_PUSH_BANK_PARAMS = [
+    "NAM Cat", "NAM Model 0", "NAM Dry/Wet", "IR Cat",
+    "IR File 0", "IR Dry/Wet", "Noise Gate Threshold", "Noise Gate On",
+]
+
+# Push bank 1: the tone stack + levels. These params are static (no per-category
+# swapping), so unlike bank 0 the runtime JS never edits this bank. Curating them
+# here gives Push a named "Tone" page instead of leaving them in the auto main bank.
+_PUSH_TONE_BANK_PARAMS = [
+    "Input", "NAM Out", "Bass", "Mid",
+    "Treble", "Tone Stack On", "IR On", "Bypass",
+]
+
+
+def _build_parameters_block(boxes):
+    """Generate patcher.parameters: a {varname: [longname, shortname, 0]} registry
+    of every parameter object, plus the baked Push bank. Derived from the boxes so
+    it can never drift from the actual parameters in the patch."""
+    registry = {}
+    for b in boxes:
+        inner = b["box"]
+        vn = inner.get("varname")
+        saa = inner.get("saved_attribute_attributes")
+        if not vn or not saa:
+            continue
+        vo = saa.get("valueof") or {}
+        longname = vo.get("parameter_longname")
+        if longname is None:
+            continue
+        registry[vn] = [longname, vo.get("parameter_shortname", longname), 0]
+
+    longnames = {entry[0] for entry in registry.values()}
+    for slot in _PUSH_BANK_PARAMS + _PUSH_TONE_BANK_PARAMS:
+        if slot != "-" and slot not in longnames:
+            raise ValueError(
+                "Push bank slot %r has no matching parameter longname in the patch" % slot
+            )
+
+    registry["parameterbanks"] = {
+        "0": {
+            "index": 0,
+            "name": "NAM",
+            "parameters": list(_PUSH_BANK_PARAMS),
+            "buttons": ["-"] * 8,
+        },
+        "1": {
+            "index": 1,
+            "name": "Tone",
+            "parameters": list(_PUSH_TONE_BANK_PARAMS),
+            "buttons": ["-"] * 8,
+        },
+    }
+    registry["inherited_shortname"] = 1
+    return registry
+
+
 def build():
     boxes = []
     lines = []
@@ -1026,6 +1088,7 @@ def build():
         "gridsize": [8.0, 8.0],
         "boxes": boxes,
         "lines": lines,
+        "parameters": _build_parameters_block(boxes),
         "dependency_cache": [],
         "autosave": 0,
     }

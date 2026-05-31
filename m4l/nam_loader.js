@@ -151,13 +151,15 @@ function _setupAllPushObs() {
 }
 
 // ─── live.banks messaging ─────────────────────────────────────────────────────
-// Two-phase approach:
-//   _createBankStructure() at loadbang: sends 'new' to create empty bank slots.
-//     Params aren't registered yet so slots are empty, but bank_count > 0 forces
-//     Push into MaxDeviceParameterBank mode (not DeviceParameterBank/all-columns).
+// Bank 0 (NAM) is baked into the saved device as patcher.parameters.parameterbanks
+// (see build_nam_maxpat.py). It therefore exists with bank_count > 0 the instant
+// Live loads the device — before this JS runs — so Push shows the curated bank on
+// first load instead of one column per hidden shadow param. We must NOT send 'new'
+// here: 'new 0' on an already-occupied index inserts and pushes the baked bank to
+// index 1, producing a spurious second page.
 //   _populateBanks() at init_banks() (10ms after live.thisdevice): uses 'edit' to
-//     fill each slot with the real param name. Fires bank_parameters_changed so
-//     Push updates the display without requiring a navigate-away-back cycle.
+//     point slots 1/4 at the model/file param for the current (possibly rehydrated)
+//     category. Editing the existing baked bank is safe — no insert.
 // _sendBanksEdit() is called on every category change to update the active slot.
 
 function _sendBanksEdit(bankId, slotIdx, paramName) {
@@ -168,16 +170,6 @@ function _sendBanksEdit(bankId, slotIdx, paramName) {
     post("live_banks edit " + bankId + " slot " + slotIdx + " → " + paramName + "\n");
 }
 
-function _createBankStructure() {
-    if (!_patcher) _patcher = this.patcher;
-    var b = _patcher && _patcher.getnamed("live_banks");
-    if (!b) return;
-    // new 0 at loadbang: minimal placeholder so bank_count > 0 before Push evaluates.
-    // Real slot assignments happen in _populateBanks() via edit at 10ms.
-    b.message("new", 0, "NAM", "NAM Cat", "NAM Model 0");
-    post("live_banks structure created (params pending)\n");
-}
-
 function _populateBanks() {
     if (_banks_created) return;
     if (!_patcher) _patcher = this.patcher;
@@ -185,10 +177,10 @@ function _populateBanks() {
     if (!b) { post("live_banks NOT FOUND\n"); return; }
     var catN = (selected_nam_cat >= 0) ? selected_nam_cat : 0;
     var irN  = (selected_ir_cat  >= 0) ? selected_ir_cat  : 0;
-    // Only bank 0 exists at this point (loadbang only allows one new call).
-    // Bank 1 (IR) is created separately in add_ir_bank() at 30ms to avoid
-    // racing with this edit — new fires on_banks_changed which can cause a
-    // transient bank_count=0 when fired in the same tick as edit.
+    // Banks 0 (NAM) and 1 (Tone) are both baked into the device
+    // (parameterbanks). Bank 1 is a static tone-stack/levels page — the JS
+    // never touches it. Only bank 0's model/IR slots are swapped per category,
+    // via 'edit' (never 'new', which would insert and shift bank 1).
     b.message("edit", 0, "NAM", 0, "NAM Cat", 1, "NAM Model " + catN, 2, "NAM Dry/Wet", 3, "IR Cat", 4, "IR File " + irN);
     b.message("edit", 0, "-", 5, "IR Dry/Wet", 6, "Noise Gate Threshold", 7, "Noise Gate On");
     _banks_created = true;
@@ -215,9 +207,8 @@ function _setPushMenuValue(varname, idx) {
 function loadbang() {
     _patcher = this.patcher;
     outlet(OUT_IR_NORM, 1.0);  // pass-through until an IR file is loaded
-    // Create empty bank structure so Push picks MaxDeviceParameterBank mode.
-    // Slots are empty until _populateBanks() runs after live.thisdevice + 10ms.
-    _createBankStructure();
+    // Bank 0 (NAM) is baked into the device (parameterbanks) — no 'new' needed.
+    // _populateBanks() (init_banks, +10ms) edits slots 1/4 for the live category.
     // LiveAPI("this_device") is not available at loadbang time — defer observers.
     _obs_task = new Task(_setupAllPushObs, this);
     _obs_task.schedule(1500);
