@@ -534,13 +534,14 @@
 					"texton": "Bypass",
 					"saved_attribute_attributes": {
 						"valueof": {
-							"parameter_longname": "Bypass",
-							"parameter_shortname": "Byp",
+							"parameter_longname": "Bypass UI",
+							"parameter_shortname": "BypUI",
 							"parameter_type": 2,
 							"parameter_enum": [
-								"off",
-								"on"
+								"Bypass",
+								"Bypass"
 							],
+							"parameter_invisible": 1,
 							"parameter_initial_enable": 1,
 							"parameter_initial": [
 								0
@@ -548,6 +549,61 @@
 						}
 					},
 					"varname": "bypass_toggle"
+				}
+			},
+			{
+				"box": {
+					"id": "bypass_menu",
+					"maxclass": "live.menu",
+					"numinlets": 1,
+					"numoutlets": 2,
+					"outlettype": [
+						"int",
+						"bang"
+					],
+					"patching_rect": [
+						940,
+						620,
+						60,
+						22
+					],
+					"parameter_enable": 1,
+					"hidden": 1,
+					"saved_attribute_attributes": {
+						"valueof": {
+							"parameter_longname": "Bypass",
+							"parameter_shortname": "Byp",
+							"parameter_type": 2,
+							"parameter_enum": [
+								"Off",
+								"On"
+							],
+							"parameter_initial_enable": 1,
+							"parameter_initial": [
+								0
+							]
+						}
+					},
+					"varname": "bypass_menu"
+				}
+			},
+			{
+				"box": {
+					"id": "bypass_setmsg",
+					"maxclass": "newobj",
+					"numinlets": 1,
+					"numoutlets": 1,
+					"outlettype": [
+						""
+					],
+					"patching_rect": [
+						1180,
+						648,
+						80,
+						22
+					],
+					"text": "prepend set",
+					"varname": "bypass_setmsg"
 				}
 			},
 			{
@@ -1281,7 +1337,9 @@
 								"1960 Fender Tweed Deluxe 5E3",
 								"1970s Sunn Concert Lead + 2x15 Cab",
 								"API 512c",
+								"Ali's Hardwares",
 								"Avalon AD2022 Preamp",
+								"Bass Pedalboard",
 								"Dumble Steel String Singer",
 								"Fender Deluxe Reverb '65 Reissue _ Clean _ SM57 + Royer R-121 + Room",
 								"Fender Deluxe Reverb II - clean and overdrive",
@@ -1566,16 +1624,26 @@
 							"parameter_shortname": "Model3",
 							"parameter_type": 2,
 							"parameter_enum": [
-								"22 dB - Chan 1",
-								"22 dB - Chan 2",
-								"30 dB - Chan 1",
-								"30 dB - Chan 2",
-								"38 dB - Chan 1",
-								"38 dB - Chan 2",
-								"46 dB - Chan 1",
-								"46 dB - Chan 2",
-								"54 dB - Chan 1",
-								"54 dB - Chan 2"
+								"1073 Mic -20",
+								"Avalon 737 Hot GS",
+								"Avalon 737 Moderate GS",
+								"Avalon 737 Normal  GS",
+								"Dangerous Convert AD+",
+								"Fatso warm 1",
+								"Frontliner line and saturation",
+								"Neve 1073 (Hi)+3(3.2Kz)-2 (110Hz)+3",
+								"Neve 1073 -10 GS",
+								"Neve 1073 -15 GS",
+								"Neve 1073 -20 GS",
+								"Neve1073 +10db A",
+								"Neve1073 +5db A",
+								"Neve1073 Normal A",
+								"Neve8066 Bus L",
+								"Neve8066 Bus R",
+								"Phoenix Acent Pre",
+								"Prism Cnvrtr",
+								"Shadow Hill  Discrete iron",
+								"TubeTech SMS"
 							],
 							"parameter_initial_enable": 1,
 							"parameter_initial": [
@@ -1629,9 +1697,16 @@
 							"parameter_shortname": "Model4",
 							"parameter_type": 2,
 							"parameter_enum": [
-								"Clean",
-								"Drive 1",
-								"Drive 2"
+								"22 dB - Chan 1",
+								"22 dB - Chan 2",
+								"30 dB - Chan 1",
+								"30 dB - Chan 2",
+								"38 dB - Chan 1",
+								"38 dB - Chan 2",
+								"46 dB - Chan 1",
+								"46 dB - Chan 2",
+								"54 dB - Chan 1",
+								"54 dB - Chan 2"
 							],
 							"parameter_initial_enable": 1,
 							"parameter_initial": [
@@ -1685,12 +1760,10 @@
 							"parameter_shortname": "Model5",
 							"parameter_type": 2,
 							"parameter_enum": [
-								"Fender DRRI _ Clean _ Room Only _ Full Rig",
-								"Fender DRRI _ Clean _ SM57 + Royer R-121 (No Room) _ Full Rig",
-								"Fender DRRI _ Clean _ SM57 + Royer R-121 + Room _ Full Rig",
-								"NEW VERSION _ Fender DRRI _ Clean _ Room Only _ Full Rig",
-								"NEW VERSION _ Fender DRRI _ Clean _ SM57 + Royer R-121 (No Room) _ Full Rig",
-								"NEW VERSION _ Fender DRRI _ Clean _ SM57 + Royer R-121 + Room _ Full Rig"
+								"B7K - Bass Comp Jr",
+								"BSF - Bass Comp Jr - B7K",
+								"BSF - Bass Comp Jr",
+								"Bass Comp Jr"
 							],
 							"parameter_initial_enable": 1,
 							"parameter_initial": [
@@ -1744,18 +1817,9 @@
 							"parameter_shortname": "Model6",
 							"parameter_type": 2,
 							"parameter_enum": [
-								"DRII_v3_t1_b3_p5_PR30",
-								"DRII_v3_t1_b3_p5_SM57",
-								"DRII_v3_t3_b3_p5_PR-30",
-								"DRII_v3_t3_b3_p5_SM57",
-								"DRII_v3pB_t3_b3_p5_PR30",
-								"DRII_v3pb_t3_b3_p5_SM57",
-								"DRIIcrnch_v5_g5_Mv3_t4_m7p_b3_p5_PR30",
-								"DRIIcrnch_v5_g5_Mv3_t4_m7p_b3_p7_SM57",
-								"DRIIcrnch_v5_g7_Mv3_t4_m7_b3_p5_PR30",
-								"DRIIcruch_v5_g7_Mv3_t4_m7_b3_p5_SM57",
-								"DRIIoverdSM57_v4_g5_Mv3_t4_m5p_b3_p5",
-								"Deluxe Reverb II_two overdrives into clean channel with SM57"
+								"Clean",
+								"Drive 1",
+								"Drive 2"
 							],
 							"parameter_initial_enable": 1,
 							"parameter_initial": [
@@ -1809,9 +1873,12 @@
 							"parameter_shortname": "Model7",
 							"parameter_type": 2,
 							"parameter_enum": [
-								"AKG 414",
-								"sm57 and AKG 414",
-								"sm57"
+								"Fender DRRI _ Clean _ Room Only _ Full Rig",
+								"Fender DRRI _ Clean _ SM57 + Royer R-121 (No Room) _ Full Rig",
+								"Fender DRRI _ Clean _ SM57 + Royer R-121 + Room _ Full Rig",
+								"NEW VERSION _ Fender DRRI _ Clean _ Room Only _ Full Rig",
+								"NEW VERSION _ Fender DRRI _ Clean _ SM57 + Royer R-121 (No Room) _ Full Rig",
+								"NEW VERSION _ Fender DRRI _ Clean _ SM57 + Royer R-121 + Room _ Full Rig"
 							],
 							"parameter_initial_enable": 1,
 							"parameter_initial": [
@@ -1865,13 +1932,18 @@
 							"parameter_shortname": "Model8",
 							"parameter_type": 2,
 							"parameter_enum": [
-								"Clean Boost",
-								"Gain 10 - Treble Boost",
-								"Gain 10",
-								"Gain 2.5",
-								"Gain 5",
-								"Gain 7.5 - Treble Boost",
-								"Gain 7.5"
+								"DRII_v3_t1_b3_p5_PR30",
+								"DRII_v3_t1_b3_p5_SM57",
+								"DRII_v3_t3_b3_p5_PR-30",
+								"DRII_v3_t3_b3_p5_SM57",
+								"DRII_v3pB_t3_b3_p5_PR30",
+								"DRII_v3pb_t3_b3_p5_SM57",
+								"DRIIcrnch_v5_g5_Mv3_t4_m7p_b3_p5_PR30",
+								"DRIIcrnch_v5_g5_Mv3_t4_m7p_b3_p7_SM57",
+								"DRIIcrnch_v5_g7_Mv3_t4_m7_b3_p5_PR30",
+								"DRIIcruch_v5_g7_Mv3_t4_m7_b3_p5_SM57",
+								"DRIIoverdSM57_v4_g5_Mv3_t4_m5p_b3_p5",
+								"Deluxe Reverb II_two overdrives into clean channel with SM57"
 							],
 							"parameter_initial_enable": 1,
 							"parameter_initial": [
@@ -1925,13 +1997,9 @@
 							"parameter_shortname": "Model9",
 							"parameter_type": 2,
 							"parameter_enum": [
-								"1964 VOX AC50 Mk. I (Potentially ex-beatles)",
-								"1976 Fender Princeton Reverb - Silverface",
-								"Acoustic Sim",
-								"JHS Colour Box V2",
-								"Neve + 1176 + 1176",
-								"Sovtek Green Russian Big Muff Clone",
-								"Sunn Lucky Number 7 Capture"
+								"AKG 414",
+								"sm57 and AKG 414",
+								"sm57"
 							],
 							"parameter_initial_enable": 1,
 							"parameter_initial": [
@@ -1985,16 +2053,13 @@
 							"parameter_shortname": "Model10",
 							"parameter_type": 2,
 							"parameter_enum": [
-								"30 - L",
-								"30 - R",
-								"40 - L",
-								"40 - R",
-								"50 - L",
-								"50 - R",
-								"60 - L",
-								"60 - R",
-								"70 - L",
-								"70 - R"
+								"Clean Boost",
+								"Gain 10 - Treble Boost",
+								"Gain 10",
+								"Gain 2.5",
+								"Gain 5",
+								"Gain 7.5 - Treble Boost",
+								"Gain 7.5"
 							],
 							"parameter_initial_enable": 1,
 							"parameter_initial": [
@@ -2048,16 +2113,13 @@
 							"parameter_shortname": "Model11",
 							"parameter_type": 2,
 							"parameter_enum": [
-								"M160 - MIDDLE - BRIGHT_HI",
-								"M160 - MIDDLE - JUMPED",
-								"MD 421 - CAP EDGE - BRIGHT_HI",
-								"MD 421 - CAP EDGE - JUMPED",
-								"MD 421 - CENTER - JUMPED",
-								"MD 421 - EDGE - JUMPED",
-								"MD 421 - MIDDLE - JUMPED",
-								"MD 421 - OFF AXIS + 45 DEGREES - JUMPED",
-								"SM57 - CAP EDGE - BRIGHT_HI",
-								"SM57 - CAP EDGE - JUMPED"
+								"1964 VOX AC50 Mk. I (Potentially ex-beatles)",
+								"1976 Fender Princeton Reverb - Silverface",
+								"Acoustic Sim",
+								"JHS Colour Box V2",
+								"Neve + 1176 + 1176",
+								"Sovtek Green Russian Big Muff Clone",
+								"Sunn Lucky Number 7 Capture"
 							],
 							"parameter_initial_enable": 1,
 							"parameter_initial": [
@@ -2111,12 +2173,16 @@
 							"parameter_shortname": "Model12",
 							"parameter_type": 2,
 							"parameter_enum": [
-								"Off - SM57 & Royer 101",
-								"Off, Royer 101",
-								"Off, SM57",
-								"On, Royer R-101 & SM57",
-								"On, Royer R-101",
-								"On, SM57"
+								"30 - L",
+								"30 - R",
+								"40 - L",
+								"40 - R",
+								"50 - L",
+								"50 - R",
+								"60 - L",
+								"60 - R",
+								"70 - L",
+								"70 - R"
 							],
 							"parameter_initial_enable": 1,
 							"parameter_initial": [
@@ -2170,15 +2236,16 @@
 							"parameter_shortname": "Model13",
 							"parameter_type": 2,
 							"parameter_enum": [
-								"V10 - Mic Sum",
-								"V10 - R121",
-								"V10 - SM57",
-								"V4 - Mic Sum",
-								"V4 - R121",
-								"V4 - SM57",
-								"V6 - Mic Sum",
-								"V6 - R121",
-								"V6 - SM57"
+								"M160 - MIDDLE - BRIGHT_HI",
+								"M160 - MIDDLE - JUMPED",
+								"MD 421 - CAP EDGE - BRIGHT_HI",
+								"MD 421 - CAP EDGE - JUMPED",
+								"MD 421 - CENTER - JUMPED",
+								"MD 421 - EDGE - JUMPED",
+								"MD 421 - MIDDLE - JUMPED",
+								"MD 421 - OFF AXIS + 45 DEGREES - JUMPED",
+								"SM57 - CAP EDGE - BRIGHT_HI",
+								"SM57 - CAP EDGE - JUMPED"
 							],
 							"parameter_initial_enable": 1,
 							"parameter_initial": [
@@ -2210,6 +2277,127 @@
 			},
 			{
 				"box": {
+					"id": "Model14",
+					"maxclass": "live.menu",
+					"numinlets": 1,
+					"numoutlets": 2,
+					"outlettype": [
+						"int",
+						"bang"
+					],
+					"patching_rect": [
+						940,
+						716,
+						60,
+						22
+					],
+					"parameter_enable": 1,
+					"hidden": 1,
+					"saved_attribute_attributes": {
+						"valueof": {
+							"parameter_longname": "NAM Model 14",
+							"parameter_shortname": "Model14",
+							"parameter_type": 2,
+							"parameter_enum": [
+								"Off - SM57 & Royer 101",
+								"Off, Royer 101",
+								"Off, SM57",
+								"On, Royer R-101 & SM57",
+								"On, Royer R-101",
+								"On, SM57"
+							],
+							"parameter_initial_enable": 1,
+							"parameter_initial": [
+								0
+							]
+						}
+					},
+					"varname": "Model14"
+				}
+			},
+			{
+				"box": {
+					"id": "pre_push_Model14",
+					"maxclass": "newobj",
+					"numinlets": 1,
+					"numoutlets": 1,
+					"outlettype": [
+						""
+					],
+					"patching_rect": [
+						940,
+						740,
+						270,
+						22
+					],
+					"text": "prepend select_nam_model_by_push",
+					"varname": "pre_push_Model14"
+				}
+			},
+			{
+				"box": {
+					"id": "Model15",
+					"maxclass": "live.menu",
+					"numinlets": 1,
+					"numoutlets": 2,
+					"outlettype": [
+						"int",
+						"bang"
+					],
+					"patching_rect": [
+						940,
+						740,
+						60,
+						22
+					],
+					"parameter_enable": 1,
+					"hidden": 1,
+					"saved_attribute_attributes": {
+						"valueof": {
+							"parameter_longname": "NAM Model 15",
+							"parameter_shortname": "Model15",
+							"parameter_type": 2,
+							"parameter_enum": [
+								"V10 - Mic Sum",
+								"V10 - R121",
+								"V10 - SM57",
+								"V4 - Mic Sum",
+								"V4 - R121",
+								"V4 - SM57",
+								"V6 - Mic Sum",
+								"V6 - R121",
+								"V6 - SM57"
+							],
+							"parameter_initial_enable": 1,
+							"parameter_initial": [
+								0
+							]
+						}
+					},
+					"varname": "Model15"
+				}
+			},
+			{
+				"box": {
+					"id": "pre_push_Model15",
+					"maxclass": "newobj",
+					"numinlets": 1,
+					"numoutlets": 1,
+					"outlettype": [
+						""
+					],
+					"patching_rect": [
+						940,
+						764,
+						270,
+						22
+					],
+					"text": "prepend select_nam_model_by_push",
+					"varname": "pre_push_Model15"
+				}
+			},
+			{
+				"box": {
 					"id": "IRFile0",
 					"maxclass": "live.menu",
 					"numinlets": 1,
@@ -2220,7 +2408,7 @@
 					],
 					"patching_rect": [
 						940,
-						756,
+						804,
 						60,
 						22
 					],
@@ -2298,7 +2486,7 @@
 					],
 					"patching_rect": [
 						940,
-						780,
+						828,
 						260,
 						22
 					],
@@ -2318,7 +2506,7 @@
 					],
 					"patching_rect": [
 						940,
-						780,
+						828,
 						60,
 						22
 					],
@@ -2359,7 +2547,7 @@
 					],
 					"patching_rect": [
 						940,
-						804,
+						852,
 						260,
 						22
 					],
@@ -2379,7 +2567,7 @@
 					],
 					"patching_rect": [
 						940,
-						804,
+						852,
 						60,
 						22
 					],
@@ -2419,7 +2607,7 @@
 					],
 					"patching_rect": [
 						940,
-						828,
+						876,
 						260,
 						22
 					],
@@ -2439,7 +2627,7 @@
 					],
 					"patching_rect": [
 						940,
-						828,
+						876,
 						60,
 						22
 					],
@@ -2476,7 +2664,7 @@
 					],
 					"patching_rect": [
 						940,
-						852,
+						900,
 						260,
 						22
 					],
@@ -2496,7 +2684,7 @@
 					],
 					"patching_rect": [
 						940,
-						852,
+						900,
 						60,
 						22
 					],
@@ -2530,7 +2718,7 @@
 					],
 					"patching_rect": [
 						940,
-						876,
+						924,
 						260,
 						22
 					],
@@ -2798,13 +2986,14 @@
 					"texton": "Gate on",
 					"saved_attribute_attributes": {
 						"valueof": {
-							"parameter_longname": "Noise Gate On",
-							"parameter_shortname": "GateOn",
+							"parameter_longname": "Gate On UI",
+							"parameter_shortname": "GateUI",
 							"parameter_type": 2,
 							"parameter_enum": [
 								"Gate off",
 								"Gate on"
 							],
+							"parameter_invisible": 1,
 							"parameter_initial_enable": 1,
 							"parameter_initial": [
 								0
@@ -2812,6 +3001,61 @@
 						}
 					},
 					"varname": "gate_on_toggle"
+				}
+			},
+			{
+				"box": {
+					"id": "gate_on_menu",
+					"maxclass": "live.menu",
+					"numinlets": 1,
+					"numoutlets": 2,
+					"outlettype": [
+						"int",
+						"bang"
+					],
+					"patching_rect": [
+						940,
+						650,
+						60,
+						22
+					],
+					"parameter_enable": 1,
+					"hidden": 1,
+					"saved_attribute_attributes": {
+						"valueof": {
+							"parameter_longname": "Noise Gate On",
+							"parameter_shortname": "GateOn",
+							"parameter_type": 2,
+							"parameter_enum": [
+								"Off",
+								"On"
+							],
+							"parameter_initial_enable": 1,
+							"parameter_initial": [
+								0
+							]
+						}
+					},
+					"varname": "gate_on_menu"
+				}
+			},
+			{
+				"box": {
+					"id": "gate_on_setmsg",
+					"maxclass": "newobj",
+					"numinlets": 1,
+					"numoutlets": 1,
+					"outlettype": [
+						""
+					],
+					"patching_rect": [
+						1180,
+						678,
+						80,
+						22
+					],
+					"text": "prepend set",
+					"varname": "gate_on_setmsg"
 				}
 			},
 			{
@@ -3250,13 +3494,14 @@
 					"texton": "Tone on",
 					"saved_attribute_attributes": {
 						"valueof": {
-							"parameter_longname": "Tone Stack On",
-							"parameter_shortname": "EQOn",
+							"parameter_longname": "Tone Stack On UI",
+							"parameter_shortname": "EQUI",
 							"parameter_type": 2,
 							"parameter_enum": [
 								"Tone off",
 								"Tone on"
 							],
+							"parameter_invisible": 1,
 							"parameter_initial_enable": 1,
 							"parameter_initial": [
 								1
@@ -3264,6 +3509,61 @@
 						}
 					},
 					"varname": "tone_on_toggle"
+				}
+			},
+			{
+				"box": {
+					"id": "tone_on_menu",
+					"maxclass": "live.menu",
+					"numinlets": 1,
+					"numoutlets": 2,
+					"outlettype": [
+						"int",
+						"bang"
+					],
+					"patching_rect": [
+						940,
+						680,
+						60,
+						22
+					],
+					"parameter_enable": 1,
+					"hidden": 1,
+					"saved_attribute_attributes": {
+						"valueof": {
+							"parameter_longname": "Tone Stack On",
+							"parameter_shortname": "EQOn",
+							"parameter_type": 2,
+							"parameter_enum": [
+								"Off",
+								"On"
+							],
+							"parameter_initial_enable": 1,
+							"parameter_initial": [
+								1
+							]
+						}
+					},
+					"varname": "tone_on_menu"
+				}
+			},
+			{
+				"box": {
+					"id": "tone_on_setmsg",
+					"maxclass": "newobj",
+					"numinlets": 1,
+					"numoutlets": 1,
+					"outlettype": [
+						""
+					],
+					"patching_rect": [
+						1180,
+						708,
+						80,
+						22
+					],
+					"text": "prepend set",
+					"varname": "tone_on_setmsg"
 				}
 			},
 			{
@@ -3664,13 +3964,14 @@
 					"texton": "IR on",
 					"saved_attribute_attributes": {
 						"valueof": {
-							"parameter_longname": "IR On",
-							"parameter_shortname": "IROn",
+							"parameter_longname": "IR On UI",
+							"parameter_shortname": "IRUI",
 							"parameter_type": 2,
 							"parameter_enum": [
 								"IR off",
 								"IR on"
 							],
+							"parameter_invisible": 1,
 							"parameter_initial_enable": 1,
 							"parameter_initial": [
 								1
@@ -3678,6 +3979,61 @@
 						}
 					},
 					"varname": "ir_on_toggle"
+				}
+			},
+			{
+				"box": {
+					"id": "ir_on_menu",
+					"maxclass": "live.menu",
+					"numinlets": 1,
+					"numoutlets": 2,
+					"outlettype": [
+						"int",
+						"bang"
+					],
+					"patching_rect": [
+						940,
+						710,
+						60,
+						22
+					],
+					"parameter_enable": 1,
+					"hidden": 1,
+					"saved_attribute_attributes": {
+						"valueof": {
+							"parameter_longname": "IR On",
+							"parameter_shortname": "IROn",
+							"parameter_type": 2,
+							"parameter_enum": [
+								"Off",
+								"On"
+							],
+							"parameter_initial_enable": 1,
+							"parameter_initial": [
+								1
+							]
+						}
+					},
+					"varname": "ir_on_menu"
+				}
+			},
+			{
+				"box": {
+					"id": "ir_on_setmsg",
+					"maxclass": "newobj",
+					"numinlets": 1,
+					"numoutlets": 1,
+					"outlettype": [
+						""
+					],
+					"patching_rect": [
+						1180,
+						738,
+						80,
+						22
+					],
+					"text": "prepend set",
+					"varname": "ir_on_setmsg"
 				}
 			},
 			{
@@ -5017,6 +5373,54 @@
 			{
 				"patchline": {
 					"source": [
+						"bypass_toggle",
+						0
+					],
+					"destination": [
+						"bypass_menu",
+						0
+					]
+				}
+			},
+			{
+				"patchline": {
+					"source": [
+						"bypass_menu",
+						0
+					],
+					"destination": [
+						"bypass_setmsg",
+						0
+					]
+				}
+			},
+			{
+				"patchline": {
+					"source": [
+						"bypass_setmsg",
+						0
+					],
+					"destination": [
+						"bypass_toggle",
+						0
+					]
+				}
+			},
+			{
+				"patchline": {
+					"source": [
+						"thisdev",
+						0
+					],
+					"destination": [
+						"bypass_menu",
+						0
+					]
+				}
+			},
+			{
+				"patchline": {
+					"source": [
 						"tone_expand_toggle",
 						0
 					],
@@ -5065,7 +5469,7 @@
 			{
 				"patchline": {
 					"source": [
-						"bypass_toggle",
+						"bypass_menu",
 						0
 					],
 					"destination": [
@@ -5725,6 +6129,54 @@
 			{
 				"patchline": {
 					"source": [
+						"Model14",
+						0
+					],
+					"destination": [
+						"pre_push_Model14",
+						0
+					]
+				}
+			},
+			{
+				"patchline": {
+					"source": [
+						"pre_push_Model14",
+						0
+					],
+					"destination": [
+						"jsloader",
+						0
+					]
+				}
+			},
+			{
+				"patchline": {
+					"source": [
+						"Model15",
+						0
+					],
+					"destination": [
+						"pre_push_Model15",
+						0
+					]
+				}
+			},
+			{
+				"patchline": {
+					"source": [
+						"pre_push_Model15",
+						0
+					],
+					"destination": [
+						"jsloader",
+						0
+					]
+				}
+			},
+			{
+				"patchline": {
+					"source": [
 						"IRFile0",
 						0
 					],
@@ -5966,6 +6418,54 @@
 				"patchline": {
 					"source": [
 						"gate_on_toggle",
+						0
+					],
+					"destination": [
+						"gate_on_menu",
+						0
+					]
+				}
+			},
+			{
+				"patchline": {
+					"source": [
+						"gate_on_menu",
+						0
+					],
+					"destination": [
+						"gate_on_setmsg",
+						0
+					]
+				}
+			},
+			{
+				"patchline": {
+					"source": [
+						"gate_on_setmsg",
+						0
+					],
+					"destination": [
+						"gate_on_toggle",
+						0
+					]
+				}
+			},
+			{
+				"patchline": {
+					"source": [
+						"thisdev",
+						0
+					],
+					"destination": [
+						"gate_on_menu",
+						0
+					]
+				}
+			},
+			{
+				"patchline": {
+					"source": [
+						"gate_on_menu",
 						0
 					],
 					"destination": [
@@ -6230,6 +6730,54 @@
 				"patchline": {
 					"source": [
 						"tone_on_toggle",
+						0
+					],
+					"destination": [
+						"tone_on_menu",
+						0
+					]
+				}
+			},
+			{
+				"patchline": {
+					"source": [
+						"tone_on_menu",
+						0
+					],
+					"destination": [
+						"tone_on_setmsg",
+						0
+					]
+				}
+			},
+			{
+				"patchline": {
+					"source": [
+						"tone_on_setmsg",
+						0
+					],
+					"destination": [
+						"tone_on_toggle",
+						0
+					]
+				}
+			},
+			{
+				"patchline": {
+					"source": [
+						"thisdev",
+						0
+					],
+					"destination": [
+						"tone_on_menu",
+						0
+					]
+				}
+			},
+			{
+				"patchline": {
+					"source": [
+						"tone_on_menu",
 						0
 					],
 					"destination": [
@@ -6518,6 +7066,54 @@
 				"patchline": {
 					"source": [
 						"ir_on_toggle",
+						0
+					],
+					"destination": [
+						"ir_on_menu",
+						0
+					]
+				}
+			},
+			{
+				"patchline": {
+					"source": [
+						"ir_on_menu",
+						0
+					],
+					"destination": [
+						"ir_on_setmsg",
+						0
+					]
+				}
+			},
+			{
+				"patchline": {
+					"source": [
+						"ir_on_setmsg",
+						0
+					],
+					"destination": [
+						"ir_on_toggle",
+						0
+					]
+				}
+			},
+			{
+				"patchline": {
+					"source": [
+						"thisdev",
+						0
+					],
+					"destination": [
+						"ir_on_menu",
+						0
+					]
+				}
+			},
+			{
+				"patchline": {
+					"source": [
+						"ir_on_menu",
 						0
 					],
 					"destination": [
@@ -7067,6 +7663,11 @@
 				0
 			],
 			"bypass_toggle": [
+				"Bypass UI",
+				"BypUI",
+				0
+			],
+			"bypass_menu": [
 				"Bypass",
 				"Byp",
 				0
@@ -7186,6 +7787,16 @@
 				"Model13",
 				0
 			],
+			"Model14": [
+				"NAM Model 14",
+				"Model14",
+				0
+			],
+			"Model15": [
+				"NAM Model 15",
+				"Model15",
+				0
+			],
 			"IRFile0": [
 				"IR File 0",
 				"IRFile0",
@@ -7222,6 +7833,11 @@
 				0
 			],
 			"gate_on_toggle": [
+				"Gate On UI",
+				"GateUI",
+				0
+			],
+			"gate_on_menu": [
 				"Noise Gate On",
 				"GateOn",
 				0
@@ -7247,6 +7863,11 @@
 				0
 			],
 			"tone_on_toggle": [
+				"Tone Stack On UI",
+				"EQUI",
+				0
+			],
+			"tone_on_menu": [
 				"Tone Stack On",
 				"EQOn",
 				0
@@ -7257,6 +7878,11 @@
 				0
 			],
 			"ir_on_toggle": [
+				"IR On UI",
+				"IRUI",
+				0
+			],
+			"ir_on_menu": [
 				"IR On",
 				"IROn",
 				0

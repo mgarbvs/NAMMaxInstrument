@@ -302,6 +302,61 @@ def live_push_menu(bid, longname, shortname, py_patch=320):
     )
 
 
+def display_toggle(bid, longname, shortname, default, text, texton,
+                   px, py, pw=80, ph=22):
+    """Visible live.text toggle that mirrors a hidden live.menu shadow.
+
+    It must stay a real parameter (parameter_enable 1) — a parameter_enable 0
+    live.text does NOT hold or draw toggle state when clicked. parameter_invisible
+    1 ("Stored Only") keeps it out of Push and the automation lane, exactly like
+    the prev/next nav buttons; the automatable/Push-facing parameter is the shadow
+    live.menu (live_onoff_menu), which carries the banked longname and surfaces
+    Off/On to Push. The two are wired bidirectionally so they stay in sync."""
+    return box(
+        id=bid, maxclass="live.text",
+        numinlets=1, numoutlets=2, outlettype=["int", "int"],
+        patching_rect=[px + _PX_OFF, py + _PY_OFF, pw, ph],
+        presentation=1, presentation_rect=[px, py, pw, ph],
+        parameter_enable=1, mode=1,
+        text=text, texton=texton,
+        saved_attribute_attributes={"valueof": {
+            "parameter_longname": longname,
+            "parameter_shortname": shortname,
+            "parameter_type": 2,
+            "parameter_enum": [text, texton],
+            "parameter_invisible": 1,
+            "parameter_initial_enable": 1,
+            "parameter_initial": [default],
+        }},
+        varname=bid,
+    )
+
+
+def live_onoff_menu(bid, longname, shortname, default, py_patch=320):
+    """Hidden live.menu (Off/On) carrying a boolean-style parameter for Push.
+
+    live.menu is the only control class that surfaces its enum names to Push 3,
+    so each on/off toggle's Live parameter lives here (same longname as the old
+    live.text, so Push banks and nam_loader.js still resolve). hidden 1 keeps it
+    out of the Max patch view; the visible display_toggle mirrors it on desktop."""
+    return box(
+        id=bid, maxclass="live.menu",
+        numinlets=1, numoutlets=2, outlettype=["int", "bang"],
+        patching_rect=[940, py_patch, 60, 22],
+        parameter_enable=1,
+        hidden=1,
+        saved_attribute_attributes={"valueof": {
+            "parameter_longname": longname,
+            "parameter_shortname": shortname,
+            "parameter_type": 2,
+            "parameter_enum": ["Off", "On"],
+            "parameter_initial_enable": 1,
+            "parameter_initial": [default],
+        }},
+        varname=bid,
+    )
+
+
 def live_toggle(bid, longname, shortname, default, px, py):
     """14×14 live.toggle checkbox."""
     return box(
@@ -490,13 +545,20 @@ def build():
     lines.append(line("bypass_sel", 0, "plugout", 0))
     lines.append(line("bypass_sel", 0, "plugout", 1))
 
-    # bypass_toggle [160, 144, 58, 22]
-    boxes.append(live_text_toggle(
-        "bypass_toggle", "Bypass", "Byp", default=0,
-        px=160, py=144, pw=58, ph=22,
+    # bypass_toggle [160, 144, 58, 22] — visible button; param lives on bypass_menu
+    boxes.append(display_toggle(
+        "bypass_toggle", "Bypass UI", "BypUI", default=0,
         text="Bypass", texton="Bypass",
-        enum=["off", "on"],
+        px=160, py=144, pw=58, ph=22,
     ))
+    boxes.append(live_onoff_menu(
+        "bypass_menu", "Bypass", "Byp", default=0, py_patch=620))
+    boxes.append(newobj("bypass_setmsg", "prepend set",
+                        1180, 648, numinlets=1, numoutlets=1, outlettype=[""], w=80))
+    lines.append(line("bypass_toggle", 0, "bypass_menu", 0))    # click → param
+    lines.append(line("bypass_menu", 0, "bypass_setmsg", 0))    # param → mirror
+    lines.append(line("bypass_setmsg", 0, "bypass_toggle", 0))  # set: no re-output
+    lines.append(line("thisdev", 0, "bypass_menu", 0))          # load-time init
     # tone_expand_toggle [222, 144, 46, 22]
     boxes.append(live_text_toggle(
         "tone_expand_toggle", "Tone Section", "Tone", default=1,
@@ -526,7 +588,7 @@ def build():
 
     boxes.append(newobj("bypass_plus1", "+ 1",
                         1010, 200, numinlets=2, numoutlets=1, outlettype=["int"], w=40))
-    lines.append(line("bypass_toggle", 0, "bypass_plus1", 0))
+    lines.append(line("bypass_menu", 0, "bypass_plus1", 0))
     lines.append(line("bypass_plus1", 0, "bypass_sel", 0))
 
     # ── NAM root picker ───────────────────────────────────────────────────────
@@ -711,14 +773,22 @@ def build():
     lines.append(line("pre_gate_thresh", 0, "ng_trigger", 0))
 
     # gate_on_toggle [320, 144, 160, 22] — TONE section bottom row
-    boxes.append(live_text_toggle(
-        "gate_on_toggle", "Noise Gate On", "GateOn", default=0,
-        px=320, py=144, pw=160, ph=22,
+    boxes.append(display_toggle(
+        "gate_on_toggle", "Gate On UI", "GateUI", default=0,
         text="Gate off", texton="Gate on",
+        px=320, py=144, pw=160, ph=22,
     ))
+    boxes.append(live_onoff_menu(
+        "gate_on_menu", "Noise Gate On", "GateOn", default=0, py_patch=650))
+    boxes.append(newobj("gate_on_setmsg", "prepend set",
+                        1180, 678, numinlets=1, numoutlets=1, outlettype=[""], w=80))
+    lines.append(line("gate_on_toggle", 0, "gate_on_menu", 0))    # click → param
+    lines.append(line("gate_on_menu", 0, "gate_on_setmsg", 0))    # param → mirror
+    lines.append(line("gate_on_setmsg", 0, "gate_on_toggle", 0))  # set: no re-output
+    lines.append(line("thisdev", 0, "gate_on_menu", 0))           # load-time init
     boxes.append(newobj("gate_on_plus1", "+ 1",
                         30, 306, numinlets=2, numoutlets=1, outlettype=["int"], w=40))
-    lines.append(line("gate_on_toggle", 0, "gate_on_plus1", 0))
+    lines.append(line("gate_on_menu", 0, "gate_on_plus1", 0))
     lines.append(line("gate_on_plus1", 0, "gate_sel", 0))
 
     # ── NAM Dry/Wet blend (*~ crossfade) ─────────────────────────────────────
@@ -798,14 +868,22 @@ def build():
         lines.append(line(f"pre_{msg}", 0, "tone_ext", 0))
 
     # tone_on_toggle [480, 144, 160, 22] — TONE section bottom row
-    boxes.append(live_text_toggle(
-        "tone_on_toggle", "Tone Stack On", "EQOn", default=1,
-        px=480, py=144, pw=160, ph=22,
+    boxes.append(display_toggle(
+        "tone_on_toggle", "Tone Stack On UI", "EQUI", default=1,
         text="Tone off", texton="Tone on",
+        px=480, py=144, pw=160, ph=22,
     ))
+    boxes.append(live_onoff_menu(
+        "tone_on_menu", "Tone Stack On", "EQOn", default=1, py_patch=680))
+    boxes.append(newobj("tone_on_setmsg", "prepend set",
+                        1180, 708, numinlets=1, numoutlets=1, outlettype=[""], w=80))
+    lines.append(line("tone_on_toggle", 0, "tone_on_menu", 0))    # click → param
+    lines.append(line("tone_on_menu", 0, "tone_on_setmsg", 0))    # param → mirror
+    lines.append(line("tone_on_setmsg", 0, "tone_on_toggle", 0))  # set: no re-output
+    lines.append(line("thisdev", 0, "tone_on_menu", 0))           # load-time init
     boxes.append(newobj("tonestack_on_plus1", "+ 1",
                         30, 416, numinlets=2, numoutlets=1, outlettype=["int"], w=40))
-    lines.append(line("tone_on_toggle", 0, "tonestack_on_plus1", 0))
+    lines.append(line("tone_on_menu", 0, "tonestack_on_plus1", 0))
     lines.append(line("tonestack_on_plus1", 0, "tone_sel", 0))
 
     # ── IR convolution chain ──────────────────────────────────────────────────
@@ -890,14 +968,22 @@ def build():
     lines.append(line("ir_blend_sum", 0, "ir_sel", 2))      # IR-on blended
 
     # ir_on_toggle [794, 144, 168, 22] — IR section bottom row
-    boxes.append(live_text_toggle(
-        "ir_on_toggle", "IR On", "IROn", default=1,
-        px=794, py=144, pw=168, ph=22,
+    boxes.append(display_toggle(
+        "ir_on_toggle", "IR On UI", "IRUI", default=1,
         text="IR off", texton="IR on",
+        px=794, py=144, pw=168, ph=22,
     ))
+    boxes.append(live_onoff_menu(
+        "ir_on_menu", "IR On", "IROn", default=1, py_patch=710))
+    boxes.append(newobj("ir_on_setmsg", "prepend set",
+                        1180, 738, numinlets=1, numoutlets=1, outlettype=[""], w=80))
+    lines.append(line("ir_on_toggle", 0, "ir_on_menu", 0))    # click → param
+    lines.append(line("ir_on_menu", 0, "ir_on_setmsg", 0))    # param → mirror
+    lines.append(line("ir_on_setmsg", 0, "ir_on_toggle", 0))  # set: no re-output
+    lines.append(line("thisdev", 0, "ir_on_menu", 0))         # load-time init
     boxes.append(newobj("ir_on_plus1", "+ 1",
                         510, 250, numinlets=2, numoutlets=1, outlettype=["int"], w=40))
-    lines.append(line("ir_on_toggle", 0, "ir_on_plus1", 0))
+    lines.append(line("ir_on_menu", 0, "ir_on_plus1", 0))
     lines.append(line("ir_on_plus1", 0, "ir_sel", 0))
 
     # ir_sel → bypass_sel (out_gain is now in the NAM section, not at chain end)
