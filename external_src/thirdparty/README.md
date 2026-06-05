@@ -17,11 +17,15 @@ CMake expects it at `external_src/max-sdk/`. The CMakeLists hard-fails early wit
 ```
 git clone https://github.com/sdatkinson/NeuralAmpModelerCore.git NeuralAmpModelerCore
 cd NeuralAmpModelerCore
-git checkout <pinned-tag>
+git checkout v0.5.2                              # commit ab72c078cd141be60d963d357bd501d56cc9606b
+git submodule update --init --recursive         # populates Dependencies/{eigen,AudioDSPTools}
 git rev-parse HEAD > PINNED_COMMIT.txt
 ```
 
-Pin to a tagged release commit, not `main` — the NAM core ABI is not stable (PLAN.md §9). Record the chosen hash in `external_src/thirdparty/NeuralAmpModelerCore/PINNED_COMMIT.txt`.
+**Pinned: `v0.5.2`** (`ab72c078cd141be60d963d357bd501d56cc9606b`) — the first release
+that loads the A2 architecture. Pin to a tagged release commit, not `main` — the NAM
+core ABI is not stable (PLAN.md §9). Record the chosen hash in
+`external_src/thirdparty/NeuralAmpModelerCore/PINNED_COMMIT.txt`.
 
 ### NeuralAmpModelerPlugin (tone stack)
 

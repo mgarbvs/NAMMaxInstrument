@@ -7,8 +7,12 @@ git clone https://github.com/mgarbvs/NAMMaxInstrument.git
 cd NAMMaxInstrument/external_src/thirdparty
 
 git clone https://github.com/Cycling74/max-sdk.git ../max-sdk
-git clone https://github.com/sdatkinson/NeuralAmpModelerCore.git NeuralAmpModelerCore
 git clone https://github.com/AlexHarker/HISSTools_Library.git HISSTools_Library
+
+# NeuralAmpModelerCore — pinned to v0.5.2 (first release with the A2
+# architecture). Init submodules to populate Dependencies/{eigen,AudioDSPTools}.
+git clone https://github.com/sdatkinson/NeuralAmpModelerCore.git NeuralAmpModelerCore
+(cd NeuralAmpModelerCore && git checkout v0.5.2 && git submodule update --init --recursive)
 
 # NeuralAmpModelerPlugin (tone stack source — ToneStack.cpp + AudioDSPTools)
 git clone https://github.com/sdatkinson/NeuralAmpModelerPlugin.git NeuralAmpModelerPlugin

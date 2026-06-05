@@ -15,6 +15,10 @@
 //   - No locks in the audio path — only atomic load/exchange.
 //   - NEVER allocate in the audio callback. Scratch buffer allocated in dsp64
 //     based on maxvectorsize.
+//   - Reset()/prewarm() (which push audio through the model) run only off the
+//     audio thread: on the load worker before staging, or in dsp64 while audio
+//     is stopped. A2 "container" models read uninitialized submodel state if
+//     process() is called before a Reset+prewarm.
 //
 // Outlet order (set up innermost-first, which is outermost in the box UI):
 //   0 — (signal) audio out
@@ -82,11 +86,22 @@ typedef struct _nam {
     std::atomic<bool>       mPendingErrorNotify;   // true → next clock fires error
     char                    mErrorMsg[512];         // written by worker, read by clock cb
 
-    // NAM_SAMPLE conversion scratch buffer (float, allocated in dsp64)
-    // NAM_SAMPLE is typically float; Max passes double. We copy before/after.
-    NAM_SAMPLE *mScratchIn;   // maxvectorsize floats
-    NAM_SAMPLE *mScratchOut;  // maxvectorsize floats
+    // NAM_SAMPLE conversion scratch buffer (allocated in dsp64).
+    // On the pinned core (v0.5.2) NAM_SAMPLE resolves to double unless
+    // NAM_SAMPLE_FLOAT is defined; Max also passes double, so the copy is a
+    // straight assignment. We keep the conversion in case the core is ever
+    // built with NAM_SAMPLE_FLOAT.
+    NAM_SAMPLE *mScratchIn;   // maxvectorsize samples
+    NAM_SAMPLE *mScratchOut;  // maxvectorsize samples
     long        mScratchSize; // allocated size (in samples)
+
+    // Last sample rate / max block size seen in dsp64. The load worker reads
+    // these to Reset + prewarm a freshly loaded model before staging it, so the
+    // expensive prewarm (which pushes audio through the model) never runs on the
+    // audio thread. A2 "container" models REQUIRE this — their process() forwards
+    // straight to the active submodel with no self-initialization.
+    std::atomic<double> mSampleRate;  // 0 until dsp64 has run at least once
+    std::atomic<long>   mMaxBlock;    // 0 until dsp64 has run at least once
 #endif
 } t_nam;
 
@@ -160,6 +175,8 @@ static void *nam_new(t_symbol *, long, t_atom *)
     x->mScratchIn   = nullptr;
     x->mScratchOut  = nullptr;
     x->mScratchSize = 0;
+    x->mSampleRate.store(0.0);
+    x->mMaxBlock.store(0);
 
     // Clock for deferred outlet calls from the main thread
     x->mLoadClock = clock_new(x, (method)nam_clock_tick);
@@ -218,10 +235,21 @@ static void nam_assist(t_nam *, void *, long m, long a, char *s)
 
 // ── nam_dsp64 ────────────────────────────────────────────────────────────────
 
-static void nam_dsp64(t_nam *x, t_object *dsp64, short *, double,
+static void nam_dsp64(t_nam *x, t_object *dsp64, short *, double samplerate,
                       long maxvectorsize, long)
 {
 #if NAM_CORE_AVAILABLE
+    // dsp64 runs on the main thread with this object's audio stopped, so it is
+    // safe here (and ONLY here, or on the load worker) to Reset/prewarm a model.
+    //
+    // Make sure no load is in flight, then publish the current SR/block so the
+    // next load worker can prewarm against them.
+    if (x->mWorkerThread.joinable()) {
+        x->mWorkerThread.join();
+    }
+    x->mSampleRate.store(samplerate);
+    x->mMaxBlock.store(maxvectorsize);
+
     // Allocate scratch buffers sized for the block size.
     // We allocate here (dsp64 callback, main thread before audio starts) — NOT
     // in perform64. This avoids any allocation in the audio callback.
@@ -231,6 +259,24 @@ static void nam_dsp64(t_nam *x, t_object *dsp64, short *, double,
         x->mScratchIn   = new NAM_SAMPLE[maxvectorsize];
         x->mScratchOut  = new NAM_SAMPLE[maxvectorsize];
         x->mScratchSize = maxvectorsize;
+    }
+
+    // Drain a model that was staged while audio was stopped (e.g. loaded from
+    // saved device state before DSP started, so the worker could not prewarm it
+    // at a known SR). Swapping it in here — rather than leaving it for perform64
+    // — lets us prewarm it below on this non-audio thread.
+    if (nam::DSP *staged = x->mStagedModel.exchange(nullptr)) {
+        delete x->mModel.exchange(staged);
+        x->mPendingLoadNotify.store(true);
+        clock_delay(x->mLoadClock, 0);
+    }
+
+    // Reset + prewarm the live model for the current SR/block. Covers a sample
+    // rate change and the cold-load drain above. Safe: audio is stopped during
+    // dsp64, so perform64 is not reading the model concurrently.
+    if (nam::DSP *live = x->mModel.load()) {
+        live->Reset(samplerate, static_cast<int>(maxvectorsize));
+        live->prewarm();
     }
 #endif
     object_method(dsp64, gensym("dsp_add64"), x, (method)nam_perform64, 0, nullptr);
@@ -266,7 +312,8 @@ static void nam_perform64(t_nam *x, t_object *, double **ins, long,
     nam::DSP *model = x->mModel.load();
 
     if (!x->bypass.load() && model) {
-        // NAM_SAMPLE is float; Max uses double. Convert in → scratch.
+        // NAM_SAMPLE is double on the pinned core; Max uses double. Convert
+        // in → scratch (a no-op copy unless built with NAM_SAMPLE_FLOAT).
         NAM_SAMPLE *scratch_in  = x->mScratchIn;
         NAM_SAMPLE *scratch_out = x->mScratchOut;
         for (long i = 0; i < sampleframes; ++i) {
@@ -351,6 +398,18 @@ static void nam_load(t_nam *x, t_symbol *s)
             // the path-taking one and avoid ambiguity with the json-taking
             // overload (std::string converts to both).
             auto dsp = nam::get_dsp(std::filesystem::path(path));
+
+            // Reset + prewarm before staging, off the audio thread, using the
+            // SR/block last seen in dsp64. A2 container models REQUIRE this or
+            // their process() reads uninitialized submodel state. If dsp64 has
+            // not run yet (SR == 0, cold device load), skip — dsp64 will drain
+            // and prewarm the staged model when audio starts.
+            double sr  = x->mSampleRate.load();
+            long   blk = x->mMaxBlock.load();
+            if (sr > 0.0 && blk > 0) {
+                dsp->Reset(sr, static_cast<int>(blk));
+                dsp->prewarm();
+            }
 
             // Store into the staged slot. The audio thread will pick this up
             // on its next block and swap it into mModel.
