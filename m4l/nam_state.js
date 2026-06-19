@@ -26,6 +26,7 @@ let state = {
     ir_relpath: "",
 };
 
+
 function load() {
     try {
         if (fs.existsSync(STATE_FILE)) {

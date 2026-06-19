@@ -385,6 +385,15 @@ def build():
     lines.append(line("pre_nam_root", 0, "jsloader", 0))
     lines.append(line("pre_nam_root", 0, "nodestate", 0))
 
+    # Route messnamed("nam_state_set_nam_relpath") to nodestate so state.json stays current.
+    # Per-project persistence is handled by live.drop (parameter_enable 1) — see nam_loader.js.
+    boxes.append(newobj("rcv_set_nam_relpath", "receive nam_state_set_nam_relpath",
+                        750, 212, numinlets=1, numoutlets=1, outlettype=[""], w=260))
+    boxes.append(newobj("pre_set_nam_relpath", "prepend set_nam_relpath",
+                        750, 238, numinlets=1, numoutlets=1, outlettype=[""], w=190))
+    lines.append(line("rcv_set_nam_relpath", 0, "pre_set_nam_relpath", 0))
+    lines.append(line("pre_set_nam_relpath", 0, "nodestate", 0))
+
     # NAM trim prefix toggle [104, 148, 14, 14]
     boxes.append(live_toggle("trim_pfx_toggle_nam", "NAM Trim Prefix", "TrimNAM",
                              default=1, px=104, py=148))
@@ -776,6 +785,14 @@ def build():
     lines.append(line("opendlg_ir", 0, "pre_ir_root", 0))
     lines.append(line("pre_ir_root", 0, "jsloader", 0))
     lines.append(line("pre_ir_root", 0, "nodestate", 0))
+
+    # Route messnamed("nam_state_set_ir_relpath") to nodestate so state.json stays current.
+    boxes.append(newobj("rcv_set_ir_relpath", "receive nam_state_set_ir_relpath",
+                        420, 532, numinlets=1, numoutlets=1, outlettype=[""], w=255))
+    boxes.append(newobj("pre_set_ir_relpath", "prepend set_ir_relpath",
+                        420, 558, numinlets=1, numoutlets=1, outlettype=[""], w=180))
+    lines.append(line("rcv_set_ir_relpath", 0, "pre_set_ir_relpath", 0))
+    lines.append(line("pre_set_ir_relpath", 0, "nodestate", 0))
 
     # IR trim prefix toggle [746, 148, 14, 14]
     boxes.append(live_toggle("trim_pfx_toggle_ir", "IR Trim Prefix", "TrimIR",

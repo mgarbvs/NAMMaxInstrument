@@ -786,6 +786,44 @@
 			},
 			{
 				"box": {
+					"id": "rcv_set_nam_relpath",
+					"maxclass": "newobj",
+					"numinlets": 1,
+					"numoutlets": 1,
+					"outlettype": [
+						""
+					],
+					"patching_rect": [
+						750,
+						212,
+						260,
+						22
+					],
+					"text": "receive nam_state_set_nam_relpath",
+					"varname": "rcv_set_nam_relpath"
+				}
+			},
+			{
+				"box": {
+					"id": "pre_set_nam_relpath",
+					"maxclass": "newobj",
+					"numinlets": 1,
+					"numoutlets": 1,
+					"outlettype": [
+						""
+					],
+					"patching_rect": [
+						750,
+						238,
+						190,
+						22
+					],
+					"text": "prepend set_nam_relpath",
+					"varname": "pre_set_nam_relpath"
+				}
+			},
+			{
+				"box": {
 					"id": "trim_pfx_toggle_nam",
 					"maxclass": "live.toggle",
 					"numinlets": 1,
@@ -3093,6 +3131,44 @@
 			},
 			{
 				"box": {
+					"id": "rcv_set_ir_relpath",
+					"maxclass": "newobj",
+					"numinlets": 1,
+					"numoutlets": 1,
+					"outlettype": [
+						""
+					],
+					"patching_rect": [
+						420,
+						532,
+						255,
+						22
+					],
+					"text": "receive nam_state_set_ir_relpath",
+					"varname": "rcv_set_ir_relpath"
+				}
+			},
+			{
+				"box": {
+					"id": "pre_set_ir_relpath",
+					"maxclass": "newobj",
+					"numinlets": 1,
+					"numoutlets": 1,
+					"outlettype": [
+						""
+					],
+					"patching_rect": [
+						420,
+						558,
+						180,
+						22
+					],
+					"text": "prepend set_ir_relpath",
+					"varname": "pre_set_ir_relpath"
+				}
+			},
+			{
+				"box": {
 					"id": "trim_pfx_toggle_ir",
 					"maxclass": "live.toggle",
 					"numinlets": 1,
@@ -4423,6 +4499,30 @@
 			{
 				"patchline": {
 					"source": [
+						"rcv_set_nam_relpath",
+						0
+					],
+					"destination": [
+						"pre_set_nam_relpath",
+						0
+					]
+				}
+			},
+			{
+				"patchline": {
+					"source": [
+						"pre_set_nam_relpath",
+						0
+					],
+					"destination": [
+						"nodestate",
+						0
+					]
+				}
+			},
+			{
+				"patchline": {
+					"source": [
 						"trim_pfx_toggle_nam",
 						0
 					],
@@ -5636,6 +5736,30 @@
 				"patchline": {
 					"source": [
 						"pre_ir_root",
+						0
+					],
+					"destination": [
+						"nodestate",
+						0
+					]
+				}
+			},
+			{
+				"patchline": {
+					"source": [
+						"rcv_set_ir_relpath",
+						0
+					],
+					"destination": [
+						"pre_set_ir_relpath",
+						0
+					]
+				}
+			},
+			{
+				"patchline": {
+					"source": [
+						"pre_set_ir_relpath",
 						0
 					],
 					"destination": [
