@@ -41,6 +41,32 @@ var trim_prefix_nam = 1;
 var trim_prefix_ir  = 1;
 var _patcher = null;
 
+// Per-project persistence via live.drop (parameter_enable 1).
+// On project load, Live restores the live.drop parameter and fires the saved
+// absolute path through its outlet → load_dropped_nam/ir → stores it here.
+// rehydrate() picks it up to sync the UI without re-loading the model.
+var _startup_phase = true;
+var _startup_nam_abspath = "";
+var _startup_ir_abspath = "";
+
+function _updateLiveDrop(varname, abspath) {
+    if (!_patcher) _patcher = this.patcher;
+    var b = _patcher && _patcher.getnamed(varname);
+    if (b) b.message("set", abspath);
+}
+
+function _abspathToRelpath(cats, abspath, ext) {
+    for (var i = 0; i < cats.length; i++) {
+        var files = listFilesByExt(cats[i].abspath, ext);
+        for (var j = 0; j < files.length; j++) {
+            if (files[j].abspath === abspath) {
+                return cats[i].name + "/" + files[j].name;
+            }
+        }
+    }
+    return "";
+}
+
 // LiveAPI observers for Push 3 out-of-range clamping.
 // .observe() is not available in this Max JS context; use .property = "value".
 // Function-object form required (string-name form gives "invalid path").
@@ -452,6 +478,7 @@ function select_nam_model(idx) {
     outlet(OUT_NAM_LOAD, "load", m.abspath);
     setStatus("Loading model: " + m.name);
     messnamed("nam_state_set_nam_relpath", m.relpath);
+    _updateLiveDrop("nam_live_drop", m.abspath);
     _coverNamDrop();
 }
 
@@ -538,6 +565,7 @@ function select_ir(idx) {
     outlet(OUT_IR_NORM, 0.12589);
     setStatus("Loading IR: " + f.name);
     messnamed("nam_state_set_ir_relpath", f.relpath);
+    _updateLiveDrop("ir_live_drop", f.abspath);
     _coverIrDrop();
 }
 
@@ -621,6 +649,7 @@ function load_dropped_nam() {
     var p = maxPathToPosix(arrayfromargs(arguments).join(" "));
     if (!p || !endsWith(p.toLowerCase(), ".nam")) return;
     outlet(OUT_NAM_LOAD, "load", p);
+    if (_startup_phase) { _startup_nam_abspath = p; return; }
     var name = p.slice(p.lastIndexOf("/") + 1).replace(/\.nam$/i, "");
     setStatus("Loaded: " + name);
     outlet(OUT_NAM_MODEL, "clear");
@@ -635,6 +664,7 @@ function load_dropped_ir() {
     if (!endsWith(pl, ".wav") && !endsWith(pl, ".aif") && !endsWith(pl, ".aiff")) return;
     outlet(OUT_IR_LOAD, "read", p);
     outlet(OUT_IR_NORM, 0.12589);
+    if (_startup_phase) { _startup_ir_abspath = p; return; }
     setStatus("Loading IR: " + p.slice(p.lastIndexOf("/") + 1));
     _coverIrDrop();
 }
@@ -677,6 +707,7 @@ function sr_changed() {
 
 // Called by nam_state.js on device load with a JSON string of saved state.
 function rehydrate() {
+    _startup_phase = false;
     var raw = arrayfromargs(arguments).join(" ");
     if (!raw || !/\S/.test(raw)) return;
     var state;
@@ -696,7 +727,13 @@ function rehydrate() {
         nam_categories = _buildCategories(nam_root, ".nam");
         _syncPushNames("nam_cat_idx", nam_categories);
             if (nam_categories.length > 0) {
-            var nrel = state.nam_relpath || "";
+            // live.drop fires the per-project path before rehydrate runs.
+            // Use it to sync UI; if found, skip re-loading (already loaded).
+            var nDropPath = _startup_nam_abspath;
+            _startup_nam_abspath = "";
+            var nrel = (nDropPath && _abspathToRelpath(nam_categories, nDropPath, ".nam"))
+                       || state.nam_relpath || "";
+            var skipLoad = nDropPath && nrel; // live.drop already loaded the model
             var nresolved = resolveRelpath(nam_categories, nrel, ".nam");
             var nCatIdx = nresolved.catIdx >= 0 ? nresolved.catIdx : 0;
             var nFileIdx = nresolved.fileIdx >= 0 ? nresolved.fileIdx : 0;
@@ -705,7 +742,13 @@ function rehydrate() {
             _populate_nam_models(nCatIdx);
             if (nam_models.length > 0) {
                 outlet(OUT_NAM_MODEL, "set", nFileIdx);
-                select_nam_model(nFileIdx);
+                if (skipLoad) {
+                    selected_nam_model = nFileIdx;
+                    syncPushIndex("nam_numbox_set_model", nFileIdx);
+                    _setPushMenuValue("Model" + selected_nam_cat, nFileIdx);
+                } else {
+                    select_nam_model(nFileIdx);
+                }
             }
             if (nrel && (nresolved.catIdx < 0 || nresolved.fileIdx < 0)) {
                 setStatus("Missing: " + nrel);
@@ -719,7 +762,11 @@ function rehydrate() {
         ir_categories = _buildCategories(ir_root, ".wav");
         _syncPushNames("ir_cat_idx", ir_categories);
             if (ir_categories.length > 0) {
-            var irel = state.ir_relpath || "";
+            var iDropPath = _startup_ir_abspath;
+            _startup_ir_abspath = "";
+            var irel = (iDropPath && _abspathToRelpath(ir_categories, iDropPath, ".wav"))
+                       || state.ir_relpath || "";
+            var iSkipLoad = iDropPath && irel;
             var iresolved = resolveRelpath(ir_categories, irel, ".wav");
             var iCatIdx = iresolved.catIdx >= 0 ? iresolved.catIdx : 0;
             var iFileIdx = iresolved.fileIdx >= 0 ? iresolved.fileIdx : 0;
@@ -728,7 +775,13 @@ function rehydrate() {
             _populate_ir_files(iCatIdx);
             if (ir_files.length > 0) {
                 outlet(OUT_IR, "set", iFileIdx);
-                select_ir(iFileIdx);
+                if (iSkipLoad) {
+                    selected_ir_file = iFileIdx;
+                    syncPushIndex("ir_numbox_set_file", iFileIdx);
+                    _setPushMenuValue("IRFile" + selected_ir_cat, iFileIdx);
+                } else {
+                    select_ir(iFileIdx);
+                }
             }
             if (irel && (iresolved.catIdx < 0 || iresolved.fileIdx < 0)) {
                 setStatus("Missing: " + irel);

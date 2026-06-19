@@ -591,6 +591,28 @@ def build():
     lines.append(line("bypass_menu", 0, "bypass_plus1", 0))
     lines.append(line("bypass_plus1", 0, "bypass_sel", 0))
 
+    # ── Output normalization toggle ───────────────────────────────────────────
+    # Visible toggle + hidden live.menu shadow (Push surfaces Off/On), wired to
+    # nam~'s "normalize 0|1" message. Default On to match the NAM plugin's
+    # "Normalized" output mode (target -18 dB from the model's loudness metadata).
+    boxes.append(display_toggle(
+        "normalize_toggle", "Normalize UI", "NrmUI", default=1,
+        text="Norm", texton="Norm",
+        px=560, py=144, pw=80, ph=22,
+    ))
+    boxes.append(live_onoff_menu(
+        "normalize_menu", "Normalize", "Nrm", default=1, py_patch=676))
+    boxes.append(newobj("normalize_setmsg", "prepend set",
+                        1180, 676, numinlets=1, numoutlets=1, outlettype=[""], w=80))
+    boxes.append(newobj("normalize_prepend", "prepend normalize",
+                        1010, 232, numinlets=1, numoutlets=1, outlettype=[""], w=120))
+    lines.append(line("normalize_toggle", 0, "normalize_menu", 0))    # click → param
+    lines.append(line("normalize_menu", 0, "normalize_setmsg", 0))    # param → mirror
+    lines.append(line("normalize_setmsg", 0, "normalize_toggle", 0))  # set: no re-output
+    lines.append(line("thisdev", 0, "normalize_menu", 0))             # load-time init
+    lines.append(line("normalize_menu", 0, "normalize_prepend", 0))   # param → message
+    lines.append(line("normalize_prepend", 0, "nam_ext", 0))          # → nam~ inlet 0
+
     # ── NAM root picker ───────────────────────────────────────────────────────
     # btn_nam_root [0, 144, 100, 22]
     boxes.append(live_text_button("btn_nam_root", "Set NAM Root",
@@ -607,6 +629,15 @@ def build():
     lines.append(line("opendlg_nam", 0, "pre_nam_root", 0))
     lines.append(line("pre_nam_root", 0, "jsloader", 0))
     lines.append(line("pre_nam_root", 0, "nodestate", 0))
+
+    # Route messnamed("nam_state_set_nam_relpath") to nodestate so state.json stays current.
+    # Per-project persistence is handled by live.drop (parameter_enable 1) — see nam_loader.js.
+    boxes.append(newobj("rcv_set_nam_relpath", "receive nam_state_set_nam_relpath",
+                        750, 212, numinlets=1, numoutlets=1, outlettype=[""], w=260))
+    boxes.append(newobj("pre_set_nam_relpath", "prepend set_nam_relpath",
+                        750, 238, numinlets=1, numoutlets=1, outlettype=[""], w=190))
+    lines.append(line("rcv_set_nam_relpath", 0, "pre_set_nam_relpath", 0))
+    lines.append(line("pre_set_nam_relpath", 0, "nodestate", 0))
 
     # NAM trim prefix toggle [104, 148, 14, 14]
     boxes.append(live_toggle("trim_pfx_toggle_nam", "NAM Trim Prefix", "TrimNAM",
@@ -867,11 +898,12 @@ def build():
         lines.append(line(dial_id, 0, f"pre_{msg}", 0))
         lines.append(line(f"pre_{msg}", 0, "tone_ext", 0))
 
-    # tone_on_toggle [480, 144, 160, 22] — TONE section bottom row
+    # tone_on_toggle [480, 144, 80, 22] — TONE section bottom row (halved to
+    # make room for the Norm toggle alongside it)
     boxes.append(display_toggle(
         "tone_on_toggle", "Tone Stack On UI", "EQUI", default=1,
         text="Tone off", texton="Tone on",
-        px=480, py=144, pw=160, ph=22,
+        px=480, py=144, pw=80, ph=22,
     ))
     boxes.append(live_onoff_menu(
         "tone_on_menu", "Tone Stack On", "EQOn", default=1, py_patch=680))
@@ -1055,6 +1087,14 @@ def build():
     lines.append(line("opendlg_ir", 0, "pre_ir_root", 0))
     lines.append(line("pre_ir_root", 0, "jsloader", 0))
     lines.append(line("pre_ir_root", 0, "nodestate", 0))
+
+    # Route messnamed("nam_state_set_ir_relpath") to nodestate so state.json stays current.
+    boxes.append(newobj("rcv_set_ir_relpath", "receive nam_state_set_ir_relpath",
+                        420, 532, numinlets=1, numoutlets=1, outlettype=[""], w=255))
+    boxes.append(newobj("pre_set_ir_relpath", "prepend set_ir_relpath",
+                        420, 558, numinlets=1, numoutlets=1, outlettype=[""], w=180))
+    lines.append(line("rcv_set_ir_relpath", 0, "pre_set_ir_relpath", 0))
+    lines.append(line("pre_set_ir_relpath", 0, "nodestate", 0))
 
     # IR trim prefix toggle [746, 148, 14, 14]
     boxes.append(live_toggle("trim_pfx_toggle_ir", "IR Trim Prefix", "TrimIR",

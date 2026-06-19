@@ -29,6 +29,7 @@ extern "C" {
 }
 
 #include <atomic>
+#include <cmath>
 #include <cstring>
 
 // ── NAM core conditional include ─────────────────────────────────────────────
@@ -64,8 +65,10 @@ typedef struct _nam {
     void       *meta_out;           // outlet 1 — metadata dict
 
     // Parameters
-    std::atomic<long> bypass;
-    double            slim;
+    std::atomic<long>   bypass;
+    std::atomic<long>   mNormalize;   // 1 = apply output loudness normalization
+    std::atomic<double> mNormGain;    // linear gain from model loudness (1.0 if unknown)
+    double              slim;
 
 #if NAM_CORE_AVAILABLE
     // Model state — atomic staged-swap pattern
@@ -105,6 +108,7 @@ static void  nam_perform64(t_nam *x, t_object *dsp64, double **ins, long numins,
 static void  nam_load(t_nam *x, t_symbol *s);
 static void  nam_reset(t_nam *x);
 static void  nam_bypass(t_nam *x, long v);
+static void  nam_normalize(t_nam *x, long v);
 static void  nam_slim(t_nam *x, double v);
 
 #if NAM_CORE_AVAILABLE
@@ -123,8 +127,9 @@ extern "C" void ext_main(void *)
     class_addmethod(c, (method)nam_assist,  "assist",  A_CANT,  0);
     class_addmethod(c, (method)nam_load,    "load",    A_SYM,   0);
     class_addmethod(c, (method)nam_reset,   "reset",   0);
-    class_addmethod(c, (method)nam_bypass,  "bypass",  A_LONG,  0);
-    class_addmethod(c, (method)nam_slim,    "slim",    A_FLOAT, 0);
+    class_addmethod(c, (method)nam_bypass,    "bypass",    A_LONG,  0);
+    class_addmethod(c, (method)nam_normalize, "normalize", A_LONG,  0);
+    class_addmethod(c, (method)nam_slim,      "slim",      A_FLOAT, 0);
 
     class_dspinit(c);
     class_register(CLASS_BOX, c);
@@ -148,6 +153,8 @@ static void *nam_new(t_symbol *, long, t_atom *)
     outlet_new(x, "signal");                                  // outlet 0
 
     x->bypass.store(0);
+    x->mNormalize.store(1);     // output normalization on by default (matches plugin)
+    x->mNormGain.store(1.0);
     x->slim = 0.0;
 
 #if NAM_CORE_AVAILABLE
@@ -205,7 +212,7 @@ static void nam_free(t_nam *x)
 static void nam_assist(t_nam *, void *, long m, long a, char *s)
 {
     if (m == ASSIST_INLET) {
-        snprintf(s, 256, "(signal) audio in / messages: load <path>, reset, bypass 0|1, slim 0..1");
+        snprintf(s, 256, "(signal) audio in / messages: load <path>, reset, bypass 0|1, normalize 0|1, slim 0..1");
     } else {
         switch (a) {
             case 0: snprintf(s, 256, "(signal) audio out"); break;
@@ -254,6 +261,15 @@ static void nam_perform64(t_nam *x, t_object *, double **ins, long,
     // the load-complete bang.
     nam::DSP *staged = x->mStagedModel.exchange(nullptr);
     if (staged) {
+        // Output loudness normalization (mirrors the plugin's "Normalized"
+        // output mode): target -18 dB, gain = -18 - model_loudness. Computed
+        // once here at swap time — not per sample. If the model has no loudness
+        // metadata, gain stays 1.0 (no-op).
+        double g = staged->HasLoudness()
+                     ? std::pow(10.0, (-18.0 - staged->GetLoudness()) / 20.0)
+                     : 1.0;
+        x->mNormGain.store(g);
+
         nam::DSP *old = x->mModel.exchange(staged);
         delete old;
         x->mPendingLoadNotify.store(true);
@@ -284,9 +300,11 @@ static void nam_perform64(t_nam *x, t_object *, double **ins, long,
         // (it existed in older NAM core releases; pinned commit on this build
         // is post-removal).
 
-        // Convert scratch_out (float) → out (double)
+        // Convert scratch_out (float) → out (double), applying the output
+        // normalization gain (1.0 when normalization is off or loudness unknown).
+        const double g = x->mNormalize.load() ? x->mNormGain.load() : 1.0;
         for (long i = 0; i < sampleframes; ++i) {
-            out[i] = static_cast<double>(scratch_out[i]);
+            out[i] = static_cast<double>(scratch_out[i]) * g;
         }
     } else {
         // Bypass or no model: passthrough
@@ -352,6 +370,18 @@ static void nam_load(t_nam *x, t_symbol *s)
             // overload (std::string converts to both).
             auto dsp = nam::get_dsp(std::filesystem::path(path));
 
+            // Diagnostic: surface the model's loudness and the resulting
+            // normalization gain so the Max console shows whether this model
+            // can be normalized at all (no loudness ⇒ gain 1.0 ⇒ toggle no-op).
+            {
+                const bool   hasL = dsp->HasLoudness();
+                const double loud = hasL ? dsp->GetLoudness() : 0.0;
+                const double gain = hasL ? std::pow(10.0, (-18.0 - loud) / 20.0) : 1.0;
+                object_post((t_object *)x,
+                    "nam~: loaded — loudness %s%.2f dB, normGain %.3f, normalize=%ld",
+                    hasL ? "" : "(none) ", loud, gain, x->mNormalize.load());
+            }
+
             // Store into the staged slot. The audio thread will pick this up
             // on its next block and swap it into mModel.
             // If a previous staged model was never consumed (very fast reload),
@@ -412,6 +442,15 @@ static void nam_reset(t_nam *x)
 static void nam_bypass(t_nam *x, long v)
 {
     x->bypass.store(v ? 1 : 0);
+}
+
+// ── nam_normalize ────────────────────────────────────────────────────────────
+
+static void nam_normalize(t_nam *x, long v)
+{
+    x->mNormalize.store(v ? 1 : 0);
+    object_post((t_object *)x, "nam~: normalize=%ld (current normGain %.3f)",
+                x->mNormalize.load(), x->mNormGain.load());
 }
 
 // ── nam_slim ─────────────────────────────────────────────────────────────────
