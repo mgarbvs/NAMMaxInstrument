@@ -374,6 +374,35 @@ function _makeDisplayFiles(rawFiles, stripExtRe, trimFlag) {
     return out;
 }
 
+// ─── NAM architecture tag (A1 vs A2, from model contents) ─────────────
+// WaveNet .nam layers carry "gated" (A1) or "gating_mode" (A2). The config
+// block precedes the big weights arrays, so the marker lands early — deepest
+// seen in a real library is ~10KB; 32KB is safe margin. Read the head only,
+// not the whole (often multi-MB) file.
+
+function _archFromHead(head) {
+    if (!head) return "";
+    if (head.indexOf('"gating_mode"') !== -1) return "A2";
+    if (head.indexOf('"gated"') !== -1) return "A1";
+    return "";  // non-WaveNet or unknown
+}
+
+// Returns "A2" / "A1" / "". Detection must never block loading, so any read
+// error yields "". File is undefined under Node tests → guard returns "".
+function _namArch(abspath) {
+    if (typeof File !== "function") return "";
+    var f = null;
+    try {
+        f = new File(abspath, "read");
+        if (!f.isopen) return "";
+        return _archFromHead(f.readstring(32768));
+    } catch (e) {
+        return "";
+    } finally {
+        if (f && f.isopen) f.close();
+    }
+}
+
 // ─── Umenu population ─────────────────────────────────────────────────
 // The category/model/IR menus are umenu (not live.menu) for the computer UI.
 // Push 3 uses hidden live.menu shadows (enum, "1"…"100" initial).
@@ -432,6 +461,8 @@ function _populate_nam_models(idx) {
     nam_models = _makeDisplayFiles(raw, /\.nam$/i, trim_prefix_nam);
     for (var i = 0; i < nam_models.length; i++) {
         nam_models[i].relpath = cat.name + "/" + nam_models[i].origname;
+        var arch = _namArch(nam_models[i].abspath);
+        if (arch) nam_models[i].name = nam_models[i].name + " [" + arch + "]";
     }
     if (nam_models.length === 0) {
         outlet(OUT_NAM_MODEL, "clear");
@@ -838,6 +869,7 @@ if (typeof module !== "undefined" && module.exports) {
             populateNamModels: _populate_nam_models,
             populateIrFiles: _populate_ir_files,
             populateBanks: _populateBanks,
+            archFromHead: _archFromHead,
             getTrimPrefixNam: function() { return trim_prefix_nam; },
             getTrimPrefixIr: function() { return trim_prefix_ir; },
             setPatcherForTest: function(p) { _patcher = p; },

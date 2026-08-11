@@ -312,6 +312,15 @@ function reset() {
     assertEq(appends, ["Clean"], "no (root) when no loose files");
 })();
 
+// 13. Architecture tag from model head (A1 vs A2 by layer key)
+(function() {
+    var arch = loader._internals.archFromHead;
+    assertEq(arch('{"architecture":"WaveNet","config":{"layers":[{"gating_mode":"gated"}]}}'), "A2", "gating_mode → A2");
+    assertEq(arch('{"architecture":"WaveNet","config":{"layers":[{"gated":false}]}}'), "A1", "gated → A1");
+    assertEq(arch('{"architecture":"LSTM","config":{}}'), "", "no marker → unknown");
+    assertEq(arch(""), "", "empty head → unknown");
+})();
+
 // ─── done ────────────────────────────────────────────────────────────
 
 console.log("\n" + passes + " passed, " + failures + " failed");
