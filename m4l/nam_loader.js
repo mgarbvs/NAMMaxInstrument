@@ -276,6 +276,38 @@ function _makeDisplayFiles(rawFiles, stripExtRe, trimFlag) {
     return out;
 }
 
+// ─── NAM cabinet tag (baked-in cab, from model metadata) ──────────────
+// metadata.gear_type of "amp_cab" or "amp_pedal_cab" means the capture
+// already includes a cabinet — loading a separate IR would double up cab
+// coloring. Optional/author-supplied: most models omit metadata entirely,
+// so absence means "unknown", not "amp only".
+
+function _gearTypeFromHead(head) {
+    if (!head) return "";
+    var m = head.match(/"gear_type"\s*:\s*"([^"]*)"/);
+    return m ? m[1] : "";
+}
+
+function _hasBakedCab(gearType) {
+    return gearType === "amp_cab" || gearType === "amp_pedal_cab";
+}
+
+// Reads the file head only (files can be multi-MB); any read error yields
+// false. File is undefined under Node tests → guard returns false.
+function _namHasCab(abspath) {
+    if (typeof File !== "function") return false;
+    var f = null;
+    try {
+        f = new File(abspath, "read");
+        if (!f.isopen) return false;
+        return _hasBakedCab(_gearTypeFromHead(f.readstring(32768)));
+    } catch (e) {
+        return false;
+    } finally {
+        if (f && f.isopen) f.close();
+    }
+}
+
 // ─── Umenu population ─────────────────────────────────────────────────
 // The category/model/IR menus are umenu (not live.menu) for the computer UI.
 // Push 3 uses hidden live.menu shadows (enum, "1"…"100" initial).
@@ -333,6 +365,7 @@ function _populate_nam_models(idx) {
     nam_models = _makeDisplayFiles(raw, /\.nam$/i, trim_prefix_nam);
     for (var i = 0; i < nam_models.length; i++) {
         nam_models[i].relpath = cat.name + "/" + nam_models[i].origname;
+        if (_namHasCab(nam_models[i].abspath)) nam_models[i].name = nam_models[i].name + " [+CAB]";
     }
     _syncPushNames("nam_model_idx", nam_models);
     if (nam_models.length === 0) {
@@ -737,6 +770,8 @@ if (typeof module !== "undefined" && module.exports) {
             getIrFiles: function() { return ir_files; },
             populateNamModels: _populate_nam_models,
             populateIrFiles: _populate_ir_files,
+            gearTypeFromHead: _gearTypeFromHead,
+            hasBakedCab: _hasBakedCab,
             getTrimPrefixNam: function() { return trim_prefix_nam; },
             getTrimPrefixIr: function() { return trim_prefix_ir; },
         }
