@@ -42,7 +42,7 @@ All together:
 
 ## Installation
 
-All files in `m4l/` must stay together in the same directory — Max for Live loads the `.mxo` externals from the same folder as the `.amxd`.
+All files in `m4l/` must stay together in the same directory — Max for Live loads the `.mxo` externals from the same folder as the `.amxd`. Don't run `NAM.amxd` from this repo directly or from an Instrument Rack preset that only carries the `.amxd` — either leaves the siblings behind and you'll get "no such object" errors.
 
 Copy the contents of `m4l/` to your Ableton User Library:
 
@@ -50,7 +50,9 @@ Copy the contents of `m4l/` to your Ableton User Library:
 ~/Music/Ableton/User Library/Presets/Audio Effects/Max Audio Effect/
 ```
 
-Then drag **NAM.amxd** onto an audio track in Live.
+or run `scripts/install_m4l.sh`, which does the same copy.
+
+Then drag **NAM.amxd** from your User Library onto an audio track in Live.
 
 ## First use
 
