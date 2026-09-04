@@ -321,6 +321,20 @@ function reset() {
     assertEq(arch(""), "", "empty head → unknown");
 })();
 
+// 14. Cabinet tag from model metadata (gear_type)
+(function() {
+    var gearType = loader._internals.gearTypeFromHead;
+    var hasCab = loader._internals.hasBakedCab;
+    assertEq(gearType('{"metadata":{"gear_type":"amp_cab"}}'), "amp_cab", "reads gear_type");
+    assertEq(gearType('{"metadata":{"gear_type": "amp_pedal_cab"}}'), "amp_pedal_cab", "reads with space after colon");
+    assertEq(gearType('{"metadata":{}}'), "", "no gear_type → empty");
+    assertEq(gearType(""), "", "empty head → empty");
+    assertEq(hasCab("amp_cab"), true, "amp_cab has baked-in cab");
+    assertEq(hasCab("amp_pedal_cab"), true, "amp_pedal_cab has baked-in cab");
+    assertEq(hasCab("amp"), false, "amp alone has no cab");
+    assertEq(hasCab(""), false, "unknown gear_type has no cab");
+})();
+
 // ─── done ────────────────────────────────────────────────────────────
 
 console.log("\n" + passes + " passed, " + failures + " failed");

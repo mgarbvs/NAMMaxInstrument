@@ -403,6 +403,37 @@ function _namArch(abspath) {
     }
 }
 
+// ─── NAM cabinet tag (baked-in cab, from model metadata) ──────────────
+// metadata.gear_type of "amp_cab" or "amp_pedal_cab" means the capture
+// already includes a cabinet — loading a separate IR would double up cab
+// coloring. Optional/author-supplied: most models omit metadata entirely,
+// so absence means "unknown", not "amp only".
+
+function _gearTypeFromHead(head) {
+    if (!head) return "";
+    var m = head.match(/"gear_type"\s*:\s*"([^"]*)"/);
+    return m ? m[1] : "";
+}
+
+function _hasBakedCab(gearType) {
+    return gearType === "amp_cab" || gearType === "amp_pedal_cab";
+}
+
+// Same head-read/error-safe contract as _namArch.
+function _namHasCab(abspath) {
+    if (typeof File !== "function") return false;
+    var f = null;
+    try {
+        f = new File(abspath, "read");
+        if (!f.isopen) return false;
+        return _hasBakedCab(_gearTypeFromHead(f.readstring(32768)));
+    } catch (e) {
+        return false;
+    } finally {
+        if (f && f.isopen) f.close();
+    }
+}
+
 // ─── Umenu population ─────────────────────────────────────────────────
 // The category/model/IR menus are umenu (not live.menu) for the computer UI.
 // Push 3 uses hidden live.menu shadows (enum, "1"…"100" initial).
@@ -463,6 +494,7 @@ function _populate_nam_models(idx) {
         nam_models[i].relpath = cat.name + "/" + nam_models[i].origname;
         var arch = _namArch(nam_models[i].abspath);
         if (arch) nam_models[i].name = nam_models[i].name + " [" + arch + "]";
+        if (_namHasCab(nam_models[i].abspath)) nam_models[i].name = nam_models[i].name + " [+CAB]";
     }
     if (nam_models.length === 0) {
         outlet(OUT_NAM_MODEL, "clear");
@@ -870,6 +902,8 @@ if (typeof module !== "undefined" && module.exports) {
             populateIrFiles: _populate_ir_files,
             populateBanks: _populateBanks,
             archFromHead: _archFromHead,
+            gearTypeFromHead: _gearTypeFromHead,
+            hasBakedCab: _hasBakedCab,
             getTrimPrefixNam: function() { return trim_prefix_nam; },
             getTrimPrefixIr: function() { return trim_prefix_ir; },
             setPatcherForTest: function(p) { _patcher = p; },
